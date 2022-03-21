@@ -6,7 +6,7 @@ This is a package of functions which I commonly use in my everyday workflow. It 
 For installing the package from GitHub please use
 
 ```
-remotes::install_github("entjos/entjos")
+remotes::install_github("entjos/entjosR")
 library(entjos)
 ```
 
