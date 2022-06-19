@@ -18,8 +18,8 @@ fpm_test_dfs(
 
 \item{dfs_bh}{A vector of DFs to be tested for the baseline hazard function.}
 
-\item{dfs_tvc}{A list of variables with a vector of DFs that should be tested for, e.g.
-\code{list(case = 1:10, female = 1:3)}.}
+\item{dfs_tvc}{A list of variables with a vector of DFs that should be tested for
+time varying effects, e.g. \code{list(case = 1:10, female = 1:3)}.}
 
 \item{by_vars}{A character vector of factor variable names used to fit stratified FPMs.
 One FPM will be fitted for each combination of factor levels specified.
@@ -33,8 +33,10 @@ specified in \code{dfs_tvc} at the same time.}
 \item{data}{A data set that should be used to fit the FPM.}
 }
 \value{
-A \code{data.frame} which one row per combination of baseline hazards
-and tvc dfs and the corresponding AIC and BIC.
+A \code{data.frame} with one row per combination of baseline hazards
+and tvc dfs and the corresponding AIC and BIC. If the \code{by_vars}
+argument is specified a \code{list} of \code{data.frame}s with one \code{data.frame}
+for each strata will be returned.
 }
 \description{
 Test of degrees of freedom (DFs) for Flexible Parametric Survival Models
@@ -42,9 +44,9 @@ Test of degrees of freedom (DFs) for Flexible Parametric Survival Models
 }
 \examples{
 require(rstpm2)
-require(survival)
 
 data(brcancer)
+data(colon)
 
 fpm_test_dfs(Surv(rectime, censrec) ~ hormon + x1,
    dfs_bh  = 1:5,
@@ -59,11 +61,11 @@ fpm_test_dfs(Surv(rectime, censrec) ~ hormon + x1,
    same_dfs_tvc = TRUE,
    data = brcancer)
 
-fpm_test_dfs(Surv(rectime, censrec) ~ hormon + x1,
-   dfs_bh  = 1:5,
-   dfs_tvc = list(hormon = 1:3,
-                  x1     = 1:5),
-   by_vars = c('x4a', 'x4b'),
-   same_dfs_tvc = TRUE,
-   data = brcancer)
+fpm_test_dfs(Surv(surv_mm, status == "Dead: cancer") ~ age + year8594,
+             dfs_bh  = 1:5,
+             dfs_tvc = list(age      = 1:5,
+                            year8594 = 1:5),
+             by_vars = c("sex", "stage"),
+             same_dfs_tvc = TRUE,
+             data = colon)
 }
