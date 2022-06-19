@@ -7,7 +7,7 @@ For installing the package from GitHub please use
 
 ```
 remotes::install_github("entjos/entjosR")
-library(entjos)
+library(entjosR)
 ```
 
 # Bugs
