@@ -10,8 +10,8 @@
 #'    A vector of DFs to be tested for the baseline hazard function.
 #'
 #' @param dfs_tvc
-#'    A list of variables with a vector of DFs that should be tested for, e.g.
-#'    `list(case = 1:10, female = 1:3)`.
+#'    A list of variables with a vector of DFs that should be tested for
+#'    time varying effects, e.g. `list(case = 1:10, female = 1:3)`.
 #'
 #' @param by_vars
 #'    A character vector of factor variable names used to fit stratified FPMs.
@@ -28,8 +28,10 @@
 #'    A data set that should be used to fit the FPM.
 #'
 #' @return
-#'    A `data.frame` which one row per combination of baseline hazards
-#'    and tvc dfs and the corresponding AIC and BIC.
+#'    A `data.frame` with one row per combination of baseline hazards
+#'    and tvc dfs and the corresponding AIC and BIC. If the `by_vars`
+#'    argument is specified a `list` of `data.frame`s with one `data.frame`
+#'    for each strata will be returned.
 #'
 #' @import rstpm2
 #'
@@ -37,9 +39,9 @@
 #'
 #' @examples
 #' require(rstpm2)
-#' require(survival)
 #'
 #' data(brcancer)
+#' data(colon)
 #'
 #' fpm_test_dfs(Surv(rectime, censrec) ~ hormon + x1,
 #'    dfs_bh  = 1:5,
@@ -54,13 +56,13 @@
 #'    same_dfs_tvc = TRUE,
 #'    data = brcancer)
 #'
-#' fpm_test_dfs(Surv(rectime, censrec) ~ hormon + x1,
-#'    dfs_bh  = 1:5,
-#'    dfs_tvc = list(hormon = 1:3,
-#'                   x1     = 1:5),
-#'    by_vars = c('x4a', 'x4b'),
-#'    same_dfs_tvc = TRUE,
-#'    data = brcancer)
+#' fpm_test_dfs(Surv(surv_mm, status == "Dead: cancer") ~ age + year8594,
+#'              dfs_bh  = 1:5,
+#'              dfs_tvc = list(age      = 1:5,
+#'                             year8594 = 1:5),
+#'              by_vars = c("sex", "stage"),
+#'              same_dfs_tvc = TRUE,
+#'              data = colon)
 
 fpm_test_dfs <- function(formula,
                          dfs_bh  = 0,
@@ -68,6 +70,13 @@ fpm_test_dfs <- function(formula,
                          by_vars = NULL,
                          same_dfs_tvc = FALSE,
                          data){
+
+  # Check that tvc variables are icluded in dataset
+  if(!all(names(dfs_tvc) %in% colnames(data))){
+
+    stop("tvc variables need to be included in data")
+
+  }
 
   # Test if model converges with 1 df
   rstpm2::stpm2(formula = formula,
@@ -83,9 +92,17 @@ fpm_test_dfs <- function(formula,
     # Test DFs for stratified models
   } else {
 
-    data <- tidyr::unite(data,
-                         col = "filter_vars",
-                         tidyselect::all_of(by_vars))
+    # If only one filter variables is selected
+    if(length(by_vars) == 1){
+
+      data$filter_vars <- data[, by_vars]
+
+      # For more than one filter variable
+    } else {
+
+      data$filter_vars <- do.call(paste, data[, by_vars])
+
+    }
 
     by(data,
        data$filter_vars,
@@ -102,12 +119,14 @@ test_dfs <- function(formula,
 
   if(is.null(dfs_tvc)){
 
-    # Loop through dfs for baseline hazard with
-    out <- purrr::map_df(.x = dfs_bh,
-                         .f = ~ test_df(df_bh   = .x,
-                                        df_tvc  = NULL,
-                                        formula = formula,
-                                        data    = data))
+    # Loop through dfs for baseline hazard
+    out <- lapply(dfs_bh,
+                  function(i){test_df(df_bh   = i,
+                                      df_tvc  = NULL,
+                                      formula = formula,
+                                      data    = data)})
+
+    out <- do.call(rbind, out)
 
 
   } else {
@@ -132,11 +151,13 @@ test_dfs <- function(formula,
     }
 
     # Test fit for different dfs
-    out <- purrr::map_df(.x = seq_len(nrow(tmp)),
-                         .f = ~ test_df(df_bh   = tmp$dfs_bh[[.x]],
-                                        df_tvc  = as.list(tmp[.x, ])[-1],
-                                        formula = formula,
-                                        data    = data))
+    out <- lapply(seq_len(nrow(tmp)),
+                  function(i){test_df(df_bh   = tmp$dfs_bh[[i]],
+                                      df_tvc  = as.list(tmp[i, ])[-1],
+                                      formula = formula,
+                                      data    = data)})
+
+    out <- do.call(rbind, out)
   }
 
   # Improve naming
@@ -150,7 +171,8 @@ test_dfs <- function(formula,
 
   }
 
-  out <- dplyr::rename_with(out, ~ gsub("\\.", "_", .x))
+  out <- stats::setNames(out,
+                         gsub("\\.", "_", colnames(out)))
 
   return(out)
 
@@ -178,9 +200,14 @@ test_df <- function(formula,
   }
 
   #Create model call which return NULL if model does not converge
-  model_call <- purrr::possibly(~ do.call(rstpm2::stpm2,
-                                          args = argument_list),
-                                otherwise = NULL)
+  model_call <- function(){
+
+    tryCatch(error = function(cnd) NULL,
+             {
+               do.call(rstpm2::stpm2,
+                       args = argument_list)
+             })
+  }
 
   model <- model_call()
 
