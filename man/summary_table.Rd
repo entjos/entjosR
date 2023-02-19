@@ -11,7 +11,8 @@ summary_table(
   overall = FALSE,
   get_rates = FALSE,
   event = NULL,
-  st = NULL
+  st = NULL,
+  control = list(ctype = "inc.rate", method = "exact")
 )
 }
 \arguments{
@@ -34,6 +35,11 @@ Needs to be specified if \code{get_rates == TRUE}.}
 
 \item{st}{Name of the varaible that includes the survival time that should be used
 to comptue rates. Needs to be specified if \code{get_rates == TRUE}.}
+
+\item{control}{A \code{list} of control parameters passed to the \code{epiR::epi.conf()} call when
+estimating confidence intervals for rates. This can be used to change the
+type and method used for estimating confidence intervals. Check out the
+documentation of \code{epiR::epi.conf()} for more information.}
 }
 \value{
 A \code{data.frame} with the following columns:

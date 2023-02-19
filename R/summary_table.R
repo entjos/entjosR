@@ -29,6 +29,12 @@
 #'    Name of the varaible that includes the survival time that should be used
 #'    to comptue rates. Needs to be specified if `get_rates == TRUE`.
 #'
+#' @param control
+#'    A `list` of control parameters passed to the `epiR::epi.conf()` call when
+#'    estimating confidence intervals for rates. This can be used to change the
+#'    type and method used for estimating confidence intervals. Check out the
+#'    documentation of `epiR::epi.conf()` for more information.
+#'
 #' @return
 #'    A `data.frame` with the following columns:
 #'    - `varname`: Including the name of the variable or the name of the category for factor variables
@@ -73,7 +79,9 @@ summary_table <- function(data,
                           overall = FALSE,
                           get_rates = FALSE,
                           event = NULL,
-                          st = NULL){
+                          st = NULL,
+                          control = list(ctype = "inc.rate",
+                                         method = "exact")){
 
   # Convert data.table to data.frame ------------------------------------------
 
@@ -155,10 +163,11 @@ summary_table <- function(data,
         temp_out_rates <-
           lapply(vars[vapply(df[, vars, with = FALSE], is.factor,  logical(1))],
                  function(x){
-                   summary_rates(df  = strata_df,
-                                 var = x,
-                                 event = event,
-                                 st    = st)
+                   summary_rates(df      = strata_df,
+                                 var     = x,
+                                 event   = event,
+                                 st      = st,
+                                 control = control)
                  }) |> data.table::rbindlist()
 
         return(merge(temp_out, temp_out_rates,
@@ -198,10 +207,11 @@ summary_table <- function(data,
       temp_out_rates <-
         lapply(vars[vapply(df[, vars, with = FALSE], is.factor, logical(1))],
                function(x){
-                 summary_rates(df  = df,
-                               var = x,
-                               event = event,
-                               st    = st)
+                 summary_rates(df      = df,
+                               var     = x,
+                               event   = event,
+                               st      = st,
+                               control = control)
                }) |> data.table::rbindlist()
 
       out_overall <- merge(out_overall, temp_out_rates,
@@ -227,9 +237,13 @@ summary_table <- function(data,
   } else {
 
     out <- out_strat
+
   }
 
-  return(as.data.frame(out))
+  # Convert data.table to data.frame
+  out[] <- lapply(out, as.data.frame)
+
+  return(out)
 
 }
 
@@ -332,7 +346,7 @@ var_summary <- function(df, var){
 
 # summary_rates function ------------------------------------------------------
 
-summary_rates <- function(df, var, event, st){
+summary_rates <- function(df, var, event, st, control){
 
   no_events <- t_at_risk <- p_events <- NULL # Due to NSE notes in R CMD check
 
@@ -347,9 +361,10 @@ summary_rates <- function(df, var, event, st){
   rate_dt[, p_events := no_events / sum(no_events)]
 
   # Calculate rates with CIs
-  rate <- epiR::epi.conf(as.matrix(rate_dt[, c("no_events", "t_at_risk")]),
-                         ctype = "inc.rate",
-                         method = "exact")
+  args_epi.conf     <- control
+  args_epi.conf$dat <- as.matrix(rate_dt[, c("no_events", "t_at_risk")])
+
+  rate <- do.call(epiR::epi.conf, args_epi.conf)
 
   # Improve naming
   names(rate) <- paste0("rate_", names(rate))
