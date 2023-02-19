@@ -20,11 +20,10 @@ Search for the model with the lowest AIC and BIC given the output of a
 }
 \examples{
 require(rstpm2)
-require(survival)
 
 data(brcancer)
 
-test_model <- fpm_test_dfs(survival::Surv(rectime, censrec) ~ hormon + x1,
+test_model <- fpm_test_dfs(Surv(rectime, censrec) ~ hormon + x1,
                  dfs_bh  = 1:5,
                  dfs_tvc = list(hormon = 1:3,
                                 x1     = 1:5),

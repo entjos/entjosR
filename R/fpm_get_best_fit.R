@@ -11,17 +11,14 @@
 #'    A `data.frame` where the first row corresponds to the model with the
 #'    lowest AIC and the second row to the model with the lowest BIC.
 #'
-#' @import rstpm2
-#'
 #' @export fpm_get_best_fit
 #'
 #' @examples
 #' require(rstpm2)
-#' require(survival)
 #'
 #' data(brcancer)
 #'
-#' test_model <- fpm_test_dfs(survival::Surv(rectime, censrec) ~ hormon + x1,
+#' test_model <- fpm_test_dfs(Surv(rectime, censrec) ~ hormon + x1,
 #'                  dfs_bh  = 1:5,
 #'                  dfs_tvc = list(hormon = 1:3,
 #'                                 x1     = 1:5),
