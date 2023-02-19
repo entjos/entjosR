@@ -2,4 +2,5 @@
 
 export(fpm_get_best_fit)
 export(fpm_test_dfs)
-import(rstpm2)
+export(summary_table)
+importFrom(data.table,":=")
