@@ -240,8 +240,19 @@ summary_table <- function(data,
 
   }
 
-  # Convert data.table to data.frame
-  out[] <- lapply(out, as.data.frame)
+  if(is.data.frame(out)){
+
+    # Convert data.table to data.frame
+    out <- as.data.frame(out)
+
+  } else {
+
+    # Convert data.table to data.frame
+    out[] <- lapply(out, as.data.frame)
+
+    attr(out, "no_summary_tables") <- length(out)
+
+  }
 
   return(out)
 
