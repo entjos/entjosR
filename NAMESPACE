@@ -3,4 +3,5 @@
 export(fpm_get_best_fit)
 export(fpm_test_dfs)
 export(summary_table)
+export(summary_table_to_workbook)
 importFrom(data.table,":=")

@@ -18,6 +18,7 @@ RoxygenNote: 7.2.1
 Imports:
   rstpm2 (>= 1.5.2),
   data.table (>= 1.14.2),
-  epiR (>= 2.0.46)
+  epiR (>= 2.0.46),
+  openxlsx (>= 4.2.5)
 Depends:
   R (>= 4.0)
