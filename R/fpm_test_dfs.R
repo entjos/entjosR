@@ -33,8 +33,6 @@
 #'    argument is specified a `list` of `data.frame`s with one `data.frame`
 #'    for each strata will be returned.
 #'
-#' @import rstpm2
-#'
 #' @export fpm_test_dfs
 #'
 #' @examples
