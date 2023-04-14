@@ -29,7 +29,7 @@ summary_table_to_workbook <- function(workbook,
                                       summary_tables,
                                       overwrite = FALSE){
 
-  if(is.null(attr(test, "no_summary_tables"))){
+  if(is.null(attr(workbook, "no_summary_tables"))){
 
     stop("`summary_tables` must be a stratified summary table.")
 
