@@ -36,7 +36,7 @@
 #'    documentation of `epiR::epi.conf()` for more information.
 #'
 #' @return
-#'    A `data.frame` with the following columns:
+#'    A `data.table` with the following columns:
 #'    - `varname`: Including the name of the variable or the name of the category for factor variables
 #'    - `mean`: The mean of the variable, i.e. the proportion for binary variables
 #'    - `p25`: The 25th percentile (only for metric variables.)
@@ -46,6 +46,10 @@
 #'    - `n_category`: The number of non-NA observations for each variable or cateogry
 #'    - `n_total`: The number of non-NA observations for the variable
 #'    - `n_NA`: The number of NA observations for this variable or category
+#'
+#'    If strata variables were supplied to `summary_table` the output
+#'    `data.table` will include one row for each strata variable with the
+#'    corresponding value for the specific strata the row belongs to.
 #'
 #' @examples
 #' require(rstpm2)
@@ -129,6 +133,7 @@ summary_table <- function(data,
 
     # Get unique values of strata variables
     strata_values <- lapply(strata, function(x){unique(df[[x]])})
+    strata_values <- setNames(strata_values, strata)
 
     # Create matrix with posssible combination of unique strata values
     stratas <- expand.grid(strata_values)
@@ -180,18 +185,27 @@ summary_table <- function(data,
 
     })
 
-    # Create list labels
-    stratas[] <- lapply(stratas, as.character)
+    # # Create list labels
+    # stratas[] <- lapply(stratas, as.character)
+    #
+    # labs <- vapply(seq_len(nrow(stratas)),
+    #                function(i){paste(strata,
+    #                                  stratas[i,],
+    #                                  sep = "==",
+    #                                  collapse = "_")
+    #                }, FUN.VALUE = character(1))
+    #
+    # # Label list elements
+    # names(out_strat) <- labs
 
-    labs <- vapply(seq_len(nrow(stratas)),
-                   function(i){paste(strata,
-                                     stratas[i,],
-                                     sep = "==",
-                                     collapse = "_")
-                   }, FUN.VALUE = character(1))
+    for(i in seq_len(nrow(stratas))) {
 
-    # Label list elements
-    names(out_strat) <- labs
+      data.table::set(out_strat[[i]], j = strata,
+                      value = stratas[i, ])
+
+      data.table::setcolorder(out_strat[[i]], strata)
+
+    }
 
   }
 
@@ -230,9 +244,10 @@ summary_table <- function(data,
 
   } else if(overall){
 
-    out <- append(out_strat, list(out_overall))
+    data.table::set(out_overall, j = strata, value = "NA")
+    data.table::setcolorder(out_overall, strata)
 
-    names(out) <- c(names(out_strat), "overall")
+    out <- append(out_strat, list(out_overall))
 
   } else {
 
@@ -248,9 +263,9 @@ summary_table <- function(data,
   } else {
 
     # Convert data.table to data.frame
-    out[] <- lapply(out, as.data.frame)
+    out <- data.table::rbindlist(out)
 
-    attr(out, "no_summary_tables") <- length(out)
+    class(out) <- c("summary_table", "data.table")
 
   }
 

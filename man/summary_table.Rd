@@ -42,7 +42,7 @@ type and method used for estimating confidence intervals. Check out the
 documentation of \code{epiR::epi.conf()} for more information.}
 }
 \value{
-A \code{data.frame} with the following columns:
+A \code{data.table} with the following columns:
 \itemize{
 \item \code{varname}: Including the name of the variable or the name of the category for factor variables
 \item \code{mean}: The mean of the variable, i.e. the proportion for binary variables
@@ -54,6 +54,10 @@ A \code{data.frame} with the following columns:
 \item \code{n_total}: The number of non-NA observations for the variable
 \item \code{n_NA}: The number of NA observations for this variable or category
 }
+
+If strata variables were supplied to \code{summary_table} the output
+\code{data.table} will include one row for each strata variable with the
+corresponding value for the specific strata the row belongs to.
 }
 \description{
 Creates stratified summary table with rates.
