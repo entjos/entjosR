@@ -138,16 +138,17 @@ summary_table <- function(data,
     # Create matrix with posssible combination of unique strata values
     stratas <- expand.grid(strata_values)
 
+    # Create a vector of concatenated strata values
+    concat_stratas <- do.call(paste, df[, strata, with = FALSE])
+
     # Subset each strat and obtain summary variables
     out_strat <- lapply(seq_len(nrow(stratas)), function(i){
-
-      concat_stratas <- do.call(paste, df[, strata, with = FALSE])
 
       if(length(strata) > 1){
 
         concat_strata <- do.call(paste, stratas[i, ])
 
-        strat_sub <- concat_strata == concat_strata
+        strat_sub <- concat_stratas == concat_strata
 
       } else {
 
