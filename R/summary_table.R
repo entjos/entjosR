@@ -242,6 +242,13 @@ summary_table <- function(data,
     out <- out_strat
 
   }
+   
+  if(is.list(out)){ 
+
+    # Cobine data.tables
+    out <- data.table::rbindlist(out_strat)
+
+  }
 
   return(data.table::data.table(out))
 
