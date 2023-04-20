@@ -246,7 +246,7 @@ summary_table <- function(data,
   if(is.list(out)){ 
 
     # Cobine data.tables
-    out <- data.table::rbindlist(out_strat)
+    out <- data.table::rbindlist(out)
 
   }
 
