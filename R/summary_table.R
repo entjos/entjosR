@@ -7,6 +7,8 @@
 #'
 #' @param vars
 #'    A character vector specifying the variables that should be summarised.
+#'    `summary_table` can only summarise variables of class `numeric` or
+#'    `factor`.
 #'
 #' @param strata
 #'    An optional character vector specifying the variables on which the
@@ -104,6 +106,13 @@ summary_table <- function(data,
 
   if(!all(strata %in% colnames(df))){
     stop("Could not find all variables specified in `strata` in `df`.")
+  }
+
+
+  if(any(vapply(df[, vars, with = FALSE], is.character, logical(1)))){
+    stop("One of the specified variables is of class `character`.
+         Summary tables can only be created for variables of class
+         `numeric` or `factor`.")
   }
 
   if(overall & is.null(strata)){
@@ -242,8 +251,8 @@ summary_table <- function(data,
     out <- out_strat
 
   }
-   
-  if(is.list(out)){ 
+
+  if(inherits(out, "list")){
 
     # Cobine data.tables
     out <- data.table::rbindlist(out)
