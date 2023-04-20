@@ -186,19 +186,6 @@ summary_table <- function(data,
 
     })
 
-    # # Create list labels
-    # stratas[] <- lapply(stratas, as.character)
-    #
-    # labs <- vapply(seq_len(nrow(stratas)),
-    #                function(i){paste(strata,
-    #                                  stratas[i,],
-    #                                  sep = "==",
-    #                                  collapse = "_")
-    #                }, FUN.VALUE = character(1))
-    #
-    # # Label list elements
-    # names(out_strat) <- labs
-
     for(i in seq_len(nrow(stratas))) {
 
       data.table::set(out_strat[[i]], j = strata,
