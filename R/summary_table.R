@@ -256,21 +256,7 @@ summary_table <- function(data,
 
   }
 
-  if(is.data.frame(out)){
-
-    # Convert data.table to data.frame
-    out <- as.data.frame(out)
-
-  } else {
-
-    # Convert data.table to data.frame
-    out <- data.table::rbindlist(out)
-
-    class(out) <- c("summary_table", "data.table")
-
-  }
-
-  return(out)
+  return(data.table::data.table(out))
 
 }
 
