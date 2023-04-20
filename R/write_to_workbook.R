@@ -1,15 +1,15 @@
-#' Summary Table to Workbook
+#' Save Datasets in Excel Workbook
 #'
-#' Saves a list of summary tables in separate sheets of an excel workbook. This
-#' function can be handy when creating tables for publication in combination
-#' with some additional formatting in Excel.
+#' Saves a list of datasets in separate sheets of an excel workbook.
+#'
+#' @param x
+#'    A named list of datasets to be stored in a excel workbook. The list
+#'    should be of the structure `list(<sheet name> = data)`. The
+#'    dataset will be stored in the excel book work sheet with the name
+#'    `<sheet name>`.
 #'
 #' @param workbook
-#'    Path to an `.xlsx` workbook in which the summary tables should be saved
-#'    in.
-#'
-#' @param summary_tables
-#'    A list of summary tables created with `summary_table`.
+#'    Path to an `.xlsx` workbook in which the datasets should be saved in.
 #'
 #' @param overwrite
 #'    This function will change the excel workbook specified in `workbook`.
@@ -20,30 +20,23 @@
 #'    interactive mode.
 #'
 #' @return
-#'    Write the data stored in the summary tables in the specified
-#'    excel workbook.
+#'    None. Writes the data specified excel workbook sheets.
 #'
-#' @export summary_table_to_workbook
+#' @export write_to_workbook
 
-summary_table_to_workbook <- function(workbook,
-                                      summary_tables,
-                                      overwrite = FALSE){
-
-  if(is.null(attr(summary_tables, "no_summary_tables"))){
-
-    stop("`summary_tables` must be a stratified summary table.")
-
-  }
+write_to_workbook <- function(x,
+                              workbook,
+                              overwrite = FALSE){
 
   # Load Excel workbook
   wb <- openxlsx::loadWorkbook(workbook)
 
-  if(!overwrite & any(names(summary_tables) %in% wb$sheet_names)){
+  if(!overwrite & any(names(x) %in% wb$sheet_names)){
 
     cat("This function will overwrite the content in the following sheets of ",
         "your specified excel workbook(s):\n",
         paste0("   - ",
-               names(summary_tables)[names(summary_tables) %in% wb$sheet_names],
+               names(x)[names(x) %in% wb$sheet_names],
                "\n"),
         "\nPlease specify one of the following options:\n",
         "   0: No, please stop here\n",
@@ -65,27 +58,27 @@ summary_table_to_workbook <- function(workbook,
   }
 
   # Add additional sheets if not already included in the workbook
-  if(!all(names(summary_tables) %in% wb$sheet_names)){
+  if(!all(names(x) %in% wb$sheet_names)){
 
     message("Added the following sheets to the workbook(s):")
 
-    add <- names(summary_tables)[!(names(summary_tables) %in% wb$sheet_names)]
+    additional_names <- names(x)[!(names(x) %in% wb$sheet_names)]
 
-    for(x in add){
+    for(name in additional_names){
 
-      openxlsx::addWorksheet(wb, x)
+      openxlsx::addWorksheet(wb, name)
 
-      message("   - ", x)
+      message("   - ", name)
 
     }
 
   }
 
   # Write summary tables to workbook
-  for(i in seq_along(summary_tables)){
+  for(i in seq_along(x)){
     openxlsx::writeData(wb,
-                        sheet = names(summary_tables)[[i]],
-                        x = summary_tables[[i]])
+                        sheet = names(x)[[i]],
+                        x = x[[i]])
   }
 
   # Save updated workbook
@@ -93,7 +86,7 @@ summary_table_to_workbook <- function(workbook,
                          file = workbook,
                          overwrite = TRUE)
 
-  message("Summary tables were succesfully saved in:\n",
+  message("Datasets were succesfully saved in:\n",
           workbook)
 
 }
