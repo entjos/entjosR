@@ -372,7 +372,7 @@ summary_rates <- function(df, var, event, st, control){
   rate_dt <- rate_dt[!is.na(get(var)),
                      list(no_events = sum(get(event)),
                           t_at_risk = sum(get(st))),
-                     by = get(var)]
+                     by = var]
 
   rate_dt[, p_events := no_events / sum(no_events)]
 
@@ -385,6 +385,6 @@ summary_rates <- function(df, var, event, st, control){
   # Improve naming
   names(rate) <- paste0("rate_", names(rate))
 
-  return(cbind(varname = paste(var, levels(df[[var]])), rate_dt[, -1], rate))
+  return(cbind(varname = paste(var, rate_dt[[var]]), rate_dt[, -1], rate))
 
 }
