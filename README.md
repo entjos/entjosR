@@ -1,4 +1,8 @@
-# User Functions
+<!-- badges: start -->
+  [![R-CMD-check](https://github.com/entjos/entjosR/workflows/R-CMD-check/badge.svg)](https://github.com/entjos/entjosR/actions)
+  <!-- badges: end -->
+
+# entjosR
 
 This is a package of functions which I commonly use in my everyday workflow. It will most likely expand throughout the time.
 
