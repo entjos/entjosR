@@ -142,7 +142,7 @@ summary_table <- function(data,
 
     # Get unique values of strata variables
     strata_values <- lapply(strata, function(x){unique(df[[x]])})
-    strata_values <- setNames(strata_values, strata)
+    strata_values <- stats::setNames(strata_values, strata)
 
     # Create matrix with posssible combination of unique strata values
     stratas <- expand.grid(strata_values)
@@ -268,7 +268,7 @@ summary_table <- function(data,
 var_summary <- function(df, var){
 
   # Calculate numbers and proportion in each category for factor variables
-  if(class(df[[var]]) == "factor"){
+  if(is.factor(df[[var]])){
 
     lev <- levels(df[[var]])
 
@@ -302,7 +302,7 @@ var_summary <- function(df, var){
 
     # Calculate numbers and proportion in each category for dichotomiesed
     # integer variables
-  } else if(class(df[[var]]) %in% c("integer", "numeric") &
+  } else if(is.numeric(df[[var]]) &
             max(df[[var]], na.rm = TRUE) == 1 &
             min(df[[var]], na.rm = TRUE) == 0){
 
@@ -328,7 +328,7 @@ var_summary <- function(df, var){
                       n_category, n_total, n_NA)
 
     # Calculate median, q25, q75 for numeric variables
-  } else if(class(df[[var]]) %in% c("integer", "numeric") &
+  } else if(is.numeric(df[[var]]) &
             max(df[[var]], na.rm = TRUE) != 1){
 
     mean <- stats::quantile(df[[var]], 0.5 , na.rm = TRUE,
