@@ -316,7 +316,7 @@ var_summary <- function(df, var){
 
     min  <- 0
 
-    man  <- 1
+    max  <- 1
 
     n_category <- sum(df[[var]], na.rm = TRUE)
 
@@ -353,7 +353,7 @@ var_summary <- function(df, var){
 
     n_NA       <- sum(is.na(df[[var]]))
 
-    out <- data.frame(varname = pste(var), mean, p25, p75, min, max,
+    out <- data.frame(varname = var, mean, p25, p75, min, max,
                       n_category, n_total, n_NA)
 
   }
