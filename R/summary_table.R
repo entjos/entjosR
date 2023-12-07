@@ -324,7 +324,7 @@ var_summary <- function(df, var){
 
     n_NA       <- sum(is.na(df[[var]]))
 
-    out <- data.frame(varname = var, mean, p25, p75, min, max,
+    out <- data.frame(varname = paste(var), mean, p25, p75, min, max,
                       n_category, n_total, n_NA)
 
     # Calculate median, q25, q75 for numeric variables
@@ -353,7 +353,7 @@ var_summary <- function(df, var){
 
     n_NA       <- sum(is.na(df[[var]]))
 
-    out <- data.frame(varname = var, mean, p25, p75, min, max,
+    out <- data.frame(varname = pste(var), mean, p25, p75, min, max,
                       n_category, n_total, n_NA)
 
   }
