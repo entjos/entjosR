@@ -318,7 +318,7 @@ var_summary <- function(df, var){
 
     man  <- 1
 
-    n_category <- sum(df[, var], na.rm = TRUE)
+    n_category <- sum(df[[var]], na.rm = TRUE)
 
     n_total    <- sum(!is.na(df[[var]]))
 
