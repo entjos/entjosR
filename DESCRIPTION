@@ -10,7 +10,7 @@ Authors@R:
 Description: This is a conglomerat of functions used by Joshua Entrop, which will probably extend throught the time.
 URL: https://github.com/entjos/entjosR
 BugReports: https://github.com/entjos/entjosR/issues
-License: CC BY 4.0
+License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
