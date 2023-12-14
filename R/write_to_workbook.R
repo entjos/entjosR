@@ -29,7 +29,7 @@ write_to_workbook <- function(x,
                               overwrite = FALSE){
 
   # Load Excel workbook
-  wb <- openxlsx::loadWorkbook(workbook)
+  wb <- openxlsx2::wb_load(workbook)
 
   if(!overwrite & any(names(x) %in% wb$sheet_names)){
 
@@ -66,7 +66,7 @@ write_to_workbook <- function(x,
 
     for(name in additional_names){
 
-      openxlsx::addWorksheet(wb, name)
+      openxlsx2::wb_add_worksheet(wb, name)
 
       message("   - ", name)
 
@@ -76,15 +76,20 @@ write_to_workbook <- function(x,
 
   # Write summary tables to workbook
   for(i in seq_along(x)){
-    openxlsx::writeData(wb,
-                        sheet = names(x)[[i]],
-                        x = x[[i]])
+
+    # Clean sheet before adding data
+    openxlsx2::wb_clean_sheet(wb,
+                              sheet = names(x)[[i]])
+
+    openxlsx2::wb_add_data(wb,
+                           sheet = names(x)[[i]],
+                           x = x[[i]])
   }
 
   # Save updated workbook
-  openxlsx::saveWorkbook(wb = wb,
-                         file = workbook,
-                         overwrite = TRUE)
+  openxlsx2::wb_save(wb = wb,
+                     file = workbook,
+                     overwrite = TRUE)
 
   message("Datasets were succesfully saved in:\n",
           workbook)

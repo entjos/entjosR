@@ -14,12 +14,12 @@ License: CC BY 4.0
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Imports:
   rstpm2 (>= 1.5.2),
   data.table (>= 1.14.2),
   epiR (>= 2.0.46),
-  openxlsx (>= 4.2.5)
+  openxlsx2 (>= 1.2)
 Depends:
   R (>= 4.0)
 Suggests: 

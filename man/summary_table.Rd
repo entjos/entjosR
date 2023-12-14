@@ -18,7 +18,9 @@ summary_table(
 \arguments{
 \item{data}{A \code{data.frame} that includes the data that should be summarised.}
 
-\item{vars}{A character vector specifying the variables that should be summarised.}
+\item{vars}{A character vector specifying the variables that should be summarised.
+\code{summary_table} can only summarise variables of class \code{numeric} or
+\code{factor}.}
 
 \item{strata}{An optional character vector specifying the variables on which the
 summary table should be stratified on.}
