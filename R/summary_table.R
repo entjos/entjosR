@@ -117,8 +117,8 @@ summary_table <- function(data,
 
   if(any(vapply(df[, vars, with = FALSE], is.character, logical(1)))){
 
-    temp <- colnames(df)[vapply(df[, vars, with = FALSE],
-                                is.character, logical(1))]
+    temp <- vars[vapply(df[, vars, with = FALSE],
+                        is.character, logical(1))]
 
     cli::cli_abort(
       c(x = "{temp} {?is/are} of type character.",
