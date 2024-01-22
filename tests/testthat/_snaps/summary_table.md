@@ -41,7 +41,7 @@
       summary_table(brcancer, vars = c("x2"), strata = c("hormon"), get_rates = TRUE,
       event = "censrec", st = "rectime")
     Message
-      Rates will only be estimted for factor variables in `vars`.
+      > Rates will only be estimted for factor variables in `vars`.
     Output
          hormon varname  mean p25 p75 min max n_category n_total n_NA no_events
       1:      0    x2 1 0.525  NA  NA   0   1        231     440    0        97

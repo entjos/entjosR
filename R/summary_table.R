@@ -97,20 +97,20 @@ summary_table <- function(data,
 
   if(get_rates & is.null(event) & is.null(st)){
     cli::cli_abort(
-      x = paste("For competing rates both the `event` and `st`",
-                "argument need to be specified.")
+      c(x = paste("For competing rates both the `event` and `st`",
+                  "argument need to be specified."))
     )
   }
 
   if(!all(vars %in% colnames(df))){
     cli::cli_abort(
-      x = "Could not find all variables specified in `vars` in `df`."
+      c(x = "Could not find all variables specified in `vars` in `df`.")
     )
   }
 
   if(!all(strata %in% colnames(df))){
     cli::cli_abort(
-      x = "Could not find all variables specified in `strata` in `df`."
+      c(x = "Could not find all variables specified in `strata` in `df`.")
     )
   }
 
@@ -138,13 +138,13 @@ summary_table <- function(data,
 
     if(any(vapply(df[, vars, with = FALSE], is.factor, logical(1)))){
       cli::cli_alert(
-        i = "Rates will only be estimted for factor variables in `vars`."
+        c(i = "Rates will only be estimted for factor variables in `vars`.")
       )
     } else {
       cli::cli_abort(
-        paste("Rates can only be estimted for factor variables in `vars`.",
-              "Please make sure that at least one variable specified in",
-              "`vars` is of class `factor`.")
+        c(x = "Rates can only be estimted for factor variables in `vars`.",
+          i = paste("Please make sure that at least one variable specified in",
+                    "`vars` is of class `factor`."))
       )
     }
   }
