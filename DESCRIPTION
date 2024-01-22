@@ -19,7 +19,8 @@ Imports:
   rstpm2 (>= 1.5.2),
   data.table (>= 1.14.2),
   epiR (>= 2.0.46),
-  openxlsx2 (>= 1.2)
+  openxlsx2 (>= 1.2),
+  cli
 Depends:
   R (>= 4.0)
 Suggests: 

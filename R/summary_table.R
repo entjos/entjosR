@@ -96,44 +96,57 @@ summary_table <- function(data,
   # Checks --------------------------------------------------------------------
 
   if(get_rates & is.null(event) & is.null(st)){
-    stop("For competing rates both the `event` and `st`
-         argument need to be specified.")
+    cli::cli_abort(
+      x = paste("For competing rates both the `event` and `st`",
+                "argument need to be specified.")
+    )
   }
 
   if(!all(vars %in% colnames(df))){
-    stop("Could not find all variables specified in `vars` in `df`.")
+    cli::cli_abort(
+      x = "Could not find all variables specified in `vars` in `df`."
+    )
   }
 
   if(!all(strata %in% colnames(df))){
-    stop("Could not find all variables specified in `strata` in `df`.")
+    cli::cli_abort(
+      x = "Could not find all variables specified in `strata` in `df`."
+    )
   }
 
 
   if(any(vapply(df[, vars, with = FALSE], is.character, logical(1)))){
-    stop("One of the specified variables is of class `character`.
-         Summary tables can only be created for variables of class
-         `numeric` or `factor`.")
+
+    temp <- colnames(df)[vapply(df[, vars, with = FALSE],
+                                is.character, logical(1))]
+
+    cli::cli_abort(
+      c(x = "{temp} {?is/are} of type character.",
+        i = paste("Summary tables can only be created for variables of class",
+                  "`numeric` or `factor`."))
+    )
   }
 
   if(overall & is.null(strata)){
-    message("Setting overall to TRUE without specifying the strata argument
-            is most likely useless.")
+    cli::cli_alert(
+      paste("Setting overall to TRUE without specifying the strata argument",
+            "is most likely useless.")
+    )
   }
 
   if(get_rates){
 
     if(any(vapply(df[, vars, with = FALSE], is.factor, logical(1)))){
-
-      message("Rates will only be estimted for factor variables in `vars`.")
-
+      cli::cli_alert(
+        i = "Rates will only be estimted for factor variables in `vars`."
+      )
     } else {
-
-      stop(paste("Rates can only be estimted for factor variables in `vars`.",
-                 "Please make sure that at least one variable specified in",
-                 "`vars` is of class `factor`."))
-
+      cli::cli_abort(
+        paste("Rates can only be estimted for factor variables in `vars`.",
+              "Please make sure that at least one variable specified in",
+              "`vars` is of class `factor`.")
+      )
     }
-
   }
 
   # Create stratified summary table -------------------------------------------
