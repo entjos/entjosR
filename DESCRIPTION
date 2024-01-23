@@ -8,7 +8,7 @@ Authors@R:
            email = "joshuaentrop@posteo.de",
            comment = c(ORCID = "0000-0003-1614-8096"))
 Description: This is a conglomerat of functions used by Joshua Entrop, which will probably extend throught the time.
-URL: https://github.com/entjos/entjosR
+URL: https://github.com/entjos/entjosR, https://entjos.github.io/entjosR/
 BugReports: https://github.com/entjos/entjosR/issues
 License: GPL (>= 3)
 Encoding: UTF-8
