@@ -97,21 +97,31 @@ summary_table <- function(data,
 
   if(get_rates & is.null(event) & is.null(st)){
     cli::cli_abort(
-      c(x = paste("For competing rates both the `event` and `st`",
+      c(x = paste("For computing rates both the `event` and `st`",
                   "argument need to be specified."))
     )
   }
 
   if(!all(vars %in% colnames(df))){
+
+    temp <- vars[!(vars %in% colnames(df))]
+
     cli::cli_abort(
-      c(x = "Could not find all variables specified in `vars` in `df`.")
+      c(x = "Could not find {temp} in `data`.",
+        i = "All variables specified in `vars` must be included in `data`")
     )
+
   }
 
   if(!all(strata %in% colnames(df))){
+
+    temp <- strata[!(strata %in% colnames(df))]
+
     cli::cli_abort(
-      c(x = "Could not find all variables specified in `strata` in `df`.")
+      c(x = "Could not find {temp} in `data`.",
+        i = "All variables specified in `strata` must be included in `data`")
     )
+
   }
 
 
