@@ -28,8 +28,18 @@ write_to_workbook <- function(x,
                               workbook,
                               overwrite = FALSE){
 
-  # Load Excel workbook
-  wb <- openxlsx2::wb_load(workbook)
+  # Check if Excel workbook already exists
+  if(file.exists(workbook)){
+
+    # Load Excel workbook
+    wb <- openxlsx2::wb_load(workbook)
+
+  } else {
+
+    # Create empty workbook
+    wb <- openxlsx2::wb_workbook()
+
+  }
 
   if(!overwrite & any(names(x) %in% wb$sheet_names)){
 
@@ -66,7 +76,7 @@ write_to_workbook <- function(x,
 
     for(name in additional_names){
 
-      openxlsx2::wb_add_worksheet(wb, name)
+      wb$add_worksheet(name)
 
       message("   - ", name)
 
@@ -78,18 +88,15 @@ write_to_workbook <- function(x,
   for(i in seq_along(x)){
 
     # Clean sheet before adding data
-    openxlsx2::wb_clean_sheet(wb,
-                              sheet = names(x)[[i]])
+    wb$clean_sheet(sheet = names(x)[[i]])
 
-    openxlsx2::wb_add_data(wb,
-                           sheet = names(x)[[i]],
-                           x = x[[i]])
+    wb$add_data(sheet = names(x)[[i]],
+                x = x[[i]])
   }
 
   # Save updated workbook
-  openxlsx2::wb_save(wb = wb,
-                     file = workbook,
-                     overwrite = TRUE)
+  wb$save(file = workbook,
+          overwrite = TRUE)
 
   message("Datasets were succesfully saved in:\n",
           workbook)
