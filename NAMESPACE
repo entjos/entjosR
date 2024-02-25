@@ -2,6 +2,8 @@
 
 export(fpm_get_best_fit)
 export(fpm_test_dfs)
+export(matching)
 export(summary_table)
 export(write_to_workbook)
+import(data.table)
 importFrom(data.table,":=")
