@@ -2,6 +2,61 @@
 #'
 #' Flexible and fast matching functions.
 #'
+#' @param data  A `data.frame` including both cases and potential controls.
+#'
+#' @param case_indicator Name of the variable that indicates if an observation
+#'    is a case or a controls, codes as 1 if case and 0 if control.
+#'
+#' @param id Name of the variable that identifies unique observations.
+#'
+#' @param matching_factors A list of matching factors and their accompanying
+#'    matching criteria either supplied as a function or as 'exact', if
+#'    exact matching is requested for a specific variable. The matching
+#'    function should take two arguments as input where the first argument
+#'    is the value of the case and the second argument is the value of the
+#'    control. The function `function(x,y) abs(x - y) < 1` can for example
+#'    be used to match cases to compactors with a maximal age difference of
+#'    one year. The function `function(x,y) y >= x` can be used for concurrent
+#'    matching, i.e., requiering the control to be alive at the time of matching.
+#'
+#'    Example:
+#'    ```
+#'    list(sex  = 'exact',
+#'         age  = function(x,y) abs(x - y) < 1,
+#'         time = function(x,y) y >= x)
+#'    ```
+#'
+#' @param no_controls The number of controls that should be matched to each
+#'   case.
+#'
+#' @param replace Logical indicator if sampling of controls should be done with
+#'   or without replacement. Default: `FALSE`.
+#'
+#' @param seed Optional seed used for the matching. Usefull for reproducibility.
+#'
+#' @param verbose Logical indicator if default checks should be printed.
+#'   Default: `TRUE`.
+#'
+#' @return A dataset of matched cases and controls.
+#'   \describe{
+#'     \item{`id`}{Individuals unique id}
+#'     \item{`case`}{Case indicator}
+#'     \item{`riskset`}{Riskset number/identifier}
+#'     }
+#'  All the variables included in the supplied dataset are also returned.
+#'
+#' @details
+#'   The function returns a warning if the number of available controls is
+#'   smaller than the number of controls requested for each case. In this
+#'   case all availabe controls are matched to the case.
+#'
+#'   If there are no matched availabe for a particular case, the case will
+#'   be removed from the output dataset and a warning will be shown indicating
+#'   the `id` of the case that has been removed.
+#'
+#'   If you want to match exact on a variable, please use the 'exact' indicator
+#'   as shown above. This will improve the computation time.
+#'
 #' @examples
 #' require(rstpm2)
 #'
@@ -10,8 +65,7 @@
 #'          id = "id",
 #'          matching_factors = list(x2 = "exact",
 #'                                  rectime = function(x, y) y >= x),
-#'          no_controls = 1,
-#'          verbose = TRUE)
+#'          no_controls = 1)
 #'
 #' @import data.table
 #' @export matching
@@ -21,24 +75,36 @@ matching <- function(data,
                      id,
                      matching_factors,
                      no_controls,
-                     replace = TRUE,
-                     seed,
-                     verbose = FALSE){
+                     replace = FALSE,
+                     seed = NULL,
+                     verbose = TRUE){
 
   # Data preperations ----------------------------------------------------------
-  data <- data.table::copy(data.table::as.data.table(data))
 
+  # Please R CMD Check
+  strata <- ..id <- case <- NULL
+
+  # Only keep variables that are needed for matching
+  vars_needed <- c(id, case_indicator, names(matching_factors))
+
+  min_data <- data.table::copy(data.table::as.data.table(data[, vars_needed]))
+
+  # Find out which variables should be matched exact
   exact_vars <- names(matching_factors[matching_factors == "exact"])
   matching_f <- matching_factors[vapply(matching_factors, is.function, TRUE)]
 
-  # Create strata variables for fast matching of exact variables
-  data[, strata := do.call(paste0, c(.SD)), .SDcols = exact_vars]
+  if(length(exact_vars) > 0){
+    # Create strata variables for fast matching of exact variables
+    min_data[, strata := do.call(paste0, c(.SD)), .SDcols = exact_vars]
+  }
 
-  cases    <- data[get(case_indicator) == 1]
-  controls <- data[get(case_indicator) == 0]
+  cases    <- min_data[get(case_indicator) == 1]
+  controls <- min_data[get(case_indicator) == 0]
 
-  # Key control dataset to make matching faster
-  controls <- controls[, list(subset = list(.SD)), by = strata]
+  if(length(exact_vars) > 0){
+    # Key control dataset to make matching faster
+    controls <- controls[, list(subset = list(.SD)), by = strata]
+  }
 
   # Matching -------------------------------------------------------------------
   matched_controls <- lapply(seq_len(nrow(cases)), function(i){
@@ -50,28 +116,18 @@ matching <- function(data,
 
     case <- cases[i, ]
 
-    # Check that exact matching is possible for all strata variables
-    if(controls[strata == case$strata, .N] < 1){
-
-      print(case[, .SD, .SDcols = c(id, exact_vars)])
-
-      cli::cli_abort(
-        c(
-          x = paste(
-            "Exact matching is not possible, because no control is",
-            "available for the case listed above"
-          )
-        )
-      )
+    if(length(exact_vars) > 0){
+      # Find matches within same strata
+      matches <- controls[strata == case$strata][["subset"]][[1]]
+    } else {
+      matches <- controls
     }
-
-    # Find matches within same strata
-    matches <- controls[strata == case$strata][["subset"]][[1]]
 
     # Apply additional matching criteria
     for (x in names(matching_f)) {
 
-      matches <- matches[matching_f[[x]](case[, get(x)], get(x))]
+      subset_var <- matching_f[[x]](case[, get(x)], matches[, get(x)])
+      matches <- matches[subset_var]
 
     }
 
@@ -81,27 +137,26 @@ matching <- function(data,
         # If no controls are availabe ==========================================
         cli::cli_warn(
           c(
-            x = "No controls available for {case[[id]]}",
-            i = "Will return case to output dataset without controls"
+            x = "No controls available for {case[[id]]}.",
+            i = "I'll remove this control form the output dataset."
           )
         )
 
-        # Combine riskset
-        comb    <- case[   , .(id = get(..id), case = 1)]
-        comb$riskset <- i
+        return(NULL)
+
       } else {
         # If to few controls are availabe ======================================
 
         cli::cli_warn(
           c(
-            x = "Less controls available than needed for case {case[[id]]}",
-            i = "Will only take those controls available"
+            x = "Less controls available than needed for case {case[[id]]}.",
+            i = "I'll only take those controls available."
           )
         )
 
         # Combine riskset
-        case    <- case[   , .(id = get(..id), case = 1)]
-        matches <- matches[, .(id = get(..id), case = 0)]
+        case    <- case[   , list(id = get(..id), case = 1)]
+        matches <- matches[, list(id = get(..id), case = 0)]
 
         comb <- rbind(case, matches)
         comb$riskset <- i
@@ -114,8 +169,8 @@ matching <- function(data,
       matches <- matches[sample(.N, no_controls, replace)]
 
       # Combine riskset
-      case    <- case[   , .(id = get(..id), case = 1)]
-      matches <- matches[, .(id = get(..id), case = 0)]
+      case    <- case[   , list(id = get(..id), case = 1)]
+      matches <- matches[, list(id = get(..id), case = 0)]
 
       comb <- rbind(case, matches)
       comb$riskset <- i
@@ -128,15 +183,18 @@ matching <- function(data,
 
   # Create output dataset ------------------------------------------------------
 
-  # Add all additional data
-  out <- merge(matched_controls,
-               data,
-               by.x = "id",
-               by.y = id,
-               all.x = TRUE)
+   additional_vars <- colnames(data)[!(colnames(data) %in% vars_needed)]
 
-  # Cleaning
-  out[, strata := NULL]
+  if(length(additional_vars) > 0){
+    # Add all additional data
+    out <- merge(matched_controls,
+                 data[, c("id", additional_vars)],
+                 by.x = "id",
+                 by.y = id,
+                 all.x = TRUE)
+  } else {
+    out <- matched_controls
+  }
 
   # Report diagnostics if needed -----------------------------------------------
   if(verbose){
