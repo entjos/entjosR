@@ -54,12 +54,89 @@
 <span>  <span class="va">id</span>,</span>
 <span>  <span class="va">matching_factors</span>,</span>
 <span>  <span class="va">no_controls</span>,</span>
-<span>  replace <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  <span class="va">seed</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  replace <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
+    <dl><dt>data</dt>
+<dd><p>A <code>data.frame</code> including both cases and potential controls.</p></dd>
+
+
+<dt>case_indicator</dt>
+<dd><p>Name of the variable that indicates if an observation
+is a case or a controls, codes as 1 if case and 0 if control.</p></dd>
+
+
+<dt>id</dt>
+<dd><p>Name of the variable that identifies unique observations.</p></dd>
+
+
+<dt>matching_factors</dt>
+<dd><p>A list of matching factors and their accompanying
+matching criteria either supplied as a function or as 'exact', if
+exact matching is requested for a specific variable. The matching
+function should take two arguments as input where the first argument
+is the value of the case and the second argument is the value of the
+control. The function <code>function(x,y) abs(x - y) &lt; 1</code> can for example
+be used to match cases to compactors with a maximal age difference of
+one year. The function <code>function(x,y) y &gt;= x</code> can be used for concurrent
+matching, i.e., requiering the control to be alive at the time of matching.</p>
+<p>Example:</p>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">list</span>(<span class="at">sex  =</span> <span class="st">'exact'</span>,</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">age  =</span> <span class="cf">function</span>(x,y) <span class="fu">abs</span>(x <span class="sc">-</span> y) <span class="sc">&lt;</span> <span class="dv">1</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">time =</span> <span class="cf">function</span>(x,y) y <span class="sc">&gt;=</span> x)</span></code></pre><p></p></div></dd>
+
+
+<dt>no_controls</dt>
+<dd><p>The number of controls that should be matched to each
+case.</p></dd>
+
+
+<dt>replace</dt>
+<dd><p>Logical indicator if sampling of controls should be done with
+or without replacement. Default: <code>FALSE</code>.</p></dd>
+
+
+<dt>seed</dt>
+<dd><p>Optional seed used for the matching. Usefull for reproducibility.</p></dd>
+
+
+<dt>verbose</dt>
+<dd><p>Logical indicator if default checks should be printed.
+Default: <code>TRUE</code>.</p></dd>
+
+</dl></div>
+    <div class="section level2">
+    <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
+    
+
+<p>A dataset of matched cases and controls.</p><dl><dt><code>id</code></dt>
+<dd><p>Individuals unique id</p></dd>
+
+<dt><code>case</code></dt>
+<dd><p>Case indicator</p></dd>
+
+<dt><code>riskset</code></dt>
+<dd><p>Riskset number/identifier</p></dd>
+
+
+</dl><p>All the variables included in the supplied dataset are also returned.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The function returns a warning if the number of available controls is
+smaller than the number of controls requested for each case. In this
+case all availabe controls are matched to the case.</p>
+<p>If there are no matched availabe for a particular case, the case will
+be removed from the output dataset and a warning will be shown indicating
+the <code>id</code> of the case that has been removed.</p>
+<p>If you want to match exact on a variable, please use the 'exact' indicator
+as shown above. This will improve the computation time.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
@@ -70,9 +147,16 @@
 <span class="r-in"><span>         id <span class="op">=</span> <span class="st">"id"</span>,</span></span>
 <span class="r-in"><span>         matching_factors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x2 <span class="op">=</span> <span class="st">"exact"</span>,</span></span>
 <span class="r-in"><span>                                 rectime <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="va">y</span> <span class="op">&gt;=</span> <span class="va">x</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>         no_controls <span class="op">=</span> <span class="fl">1</span>,</span></span>
-<span class="r-in"><span>         verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in FUN(X[[i]], ...):</span> argument "seed" is missing, with no default</span>
+<span class="r-in"><span>         no_controls <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span><span style="color: #BB0000;">✖</span> No controls available for 236.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> I'll remove this control form the output dataset.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span><span style="color: #BB0000;">✖</span> No controls available for 272.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> I'll remove this control form the output dataset.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span><span style="color: #BB0000;">✖</span> No controls available for 275.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> I'll remove this control form the output dataset.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span><span style="color: #BB0000;">✖</span> No controls available for 468.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> I'll remove this control form the output dataset.</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> Object 'hormon' not found amongst [id, case, riskset, x1, x3, x4, x5, x6, x7, censrec, ...]</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
