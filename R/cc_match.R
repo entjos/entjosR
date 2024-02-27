@@ -65,13 +65,16 @@
 #' @examples
 #'
 #' require(rstpm2)
-#' cc_match(cases    = brcancer[brcancer$hormon == 1, ],
-#'          controls = brcancer[brcancer$hormon == 0, ],
-#'          id = "id",
-#'          by = list(x2 = "exact",
-#'                    rectime = function(x, y) y >= x),
-#'          no_controls = 1,
-#'          replace = TRUE)
+#'
+#' risksets <- cc_match(cases    = brcancer[brcancer$hormon == 1, ],
+#'                      controls = brcancer[brcancer$hormon == 0, ],
+#'                      id = "id",
+#'                      by = list(x2 = "exact",
+#'                                rectime = function(x, y) y >= x),
+#'                      no_controls = 1,
+#'                      replace = TRUE)
+#'
+#' head(risksets)
 #'
 #' @import data.table
 #' @export cc_match
