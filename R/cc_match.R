@@ -2,14 +2,13 @@
 #'
 #' Flexible and fast matching functions.
 #'
-#' @param data  A `data.frame` including both cases and potential controls.
+#' @param cases  A `data.frame` including cases.
 #'
-#' @param case_indicator Name of the variable that indicates if an observation
-#'    is a case or a controls, codes as 1 if case and 0 if control.
+#' @param cases  A `data.frame` including potential controls.
 #'
 #' @param id Name of the variable that identifies unique observations.
 #'
-#' @param matching_factors A list of matching factors and their accompanying
+#' @param by A list of matching factors and their accompanying
 #'    matching criteria either supplied as a function or as 'exact', if
 #'    exact matching is requested for a specific variable. The matching
 #'    function should take two arguments as input where the first argument
@@ -43,7 +42,6 @@
 #'     \item{`case`}{Case indicator}
 #'     \item{`riskset`}{Riskset number/identifier}
 #'     }
-#'  All the variables included in the supplied dataset are also returned.
 #'
 #' @details
 #'   The function returns a warning if the number of available controls is
@@ -63,17 +61,17 @@
 #' cc_match(brcancer,
 #'          case_indicator = "hormon",
 #'          id = "id",
-#'          matching_factors = list(x2 = "exact",
-#'                                  rectime = function(x, y) y >= x),
+#'          by = list(x2 = "exact",
+#'                    rectime = function(x, y) y >= x),
 #'          no_controls = 1)
 #'
 #' @import data.table
 #' @export cc_match
 
-cc_match <- function(data,
-                     case_indicator,
+cc_match <- function(cases,
+                     controls,
+                     by,
                      id,
-                     matching_factors,
                      no_controls,
                      replace = FALSE,
                      seed = NULL,
@@ -81,7 +79,7 @@ cc_match <- function(data,
 
   # Data checks ----------------------------------------------------------------
 
-  if(sum(data[[case_indicator]] == 0) < 1){
+  if(nrow(controls) < 1){
     cli::cli_abort(
       c(
         x = "There are no controls included in {.var data}.",
@@ -95,21 +93,20 @@ cc_match <- function(data,
   strata <- ..id <- case <- used_ids <- NULL
 
   # Only keep variables that are needed for matching
-  vars_needed <- c(id, case_indicator, names(matching_factors))
+  vars_needed <- c(id, names(by))
 
-  min_data <- data.table::copy(data.table::as.data.table(data[, vars_needed]))
+  cases    <- data.table::copy(data.table::as.data.table(cases[, vars_needed]))
+  controls <- data.table::copy(data.table::as.data.table(controls[, vars_needed]))
 
   # Find out which variables should be matched exact
-  exact_vars <- names(matching_factors[matching_factors == "exact"])
-  matching_f <- matching_factors[vapply(matching_factors, is.function, TRUE)]
+  exact_vars <- names(by[by == "exact"])
+  matching_f <- by[vapply(by, is.function, TRUE)]
 
   if(length(exact_vars) > 0){
     # Create strata variables for fast matching of exact variables
-    min_data[, strata := do.call(paste0, c(.SD)), .SDcols = exact_vars]
+    cases[   , strata := do.call(paste0, c(.SD)), .SDcols = exact_vars]
+    controls[, strata := do.call(paste0, c(.SD)), .SDcols = exact_vars]
   }
-
-  cases    <- min_data[get(case_indicator) == 1]
-  controls <- min_data[get(case_indicator) == 0]
 
   if(length(exact_vars) > 0){
     # Key control dataset to make matching faster
@@ -204,26 +201,11 @@ cc_match <- function(data,
 
   }) |> data.table::rbindlist()
 
-  # Create output dataset ------------------------------------------------------
-
-  additional_vars <- colnames(data)[!(colnames(data) %in% vars_needed)]
-
-  if(length(additional_vars) > 0){
-    # Add all additional data
-    out <- merge(risksets,
-                 data[, c("id", additional_vars)],
-                 by.x = "id",
-                 by.y = id,
-                 all.x = TRUE)
-  } else {
-    out <- risksets
-  }
-
   # Report diagnostics if needed -----------------------------------------------
   if(verbose){
 
-    total_comp  <- out[case == 0, .N]
-    unique_comp <- unique(out, by = "id")[case == 0, .N]
+    total_comp  <- risksets[case == 0, .N]
+    unique_comp <- unique(risksets, by = "id")[case == 0, .N]
     prop_unique <- round(unique_comp/total_comp, 3) * 100
 
     cat("----------------------------------------\n")
@@ -235,6 +217,6 @@ cc_match <- function(data,
 
   }
 
-  return(out)
+  return(risksets)
 
 }

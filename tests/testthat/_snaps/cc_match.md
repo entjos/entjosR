@@ -1,9 +1,9 @@
 # Test replace TRUE
 
     Code
-      cc_match(test_data, id = "id", case_indicator = "case", matching_factors = list(
-        sex = "exact", time = function(x, y) y >= x), no_controls = 10, seed = 10,
-      verbose = FALSE)
+      cc_match(cases = test_data[test_data$case == 1, ], controls = test_data[
+        test_data$case == 0, ], id = "id", by = list(sex = "exact", time = function(x,
+        y) y >= x), no_controls = 10, seed = 10, verbose = FALSE)
     Output
               id case riskset
          1:    1    1       1
@@ -21,9 +21,9 @@
 # Test replace FALSE
 
     Code
-      cc_match(test_data, id = "id", case_indicator = "case", matching_factors = list(
-        sex = "exact", time = function(x, y) y >= x), no_controls = 10, seed = 10,
-      replace = FALSE, verbose = FALSE)
+      cc_match(cases = test_data[test_data$case == 1, ], controls = test_data[
+        test_data$case == 0, ], id = "id", by = list(sex = "exact", time = function(x,
+        y) y >= x), no_controls = 10, seed = 10, replace = FALSE, verbose = FALSE)
     Output
               id case riskset
          1:    1    1       1

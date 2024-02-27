@@ -6,11 +6,11 @@ test_data <- data.frame(id = 1:10000,
 
 test_that("Test replace TRUE", {
   expect_snapshot({
-    cc_match(test_data,
+    cc_match(cases    = test_data[test_data$case == 1, ],
+             controls = test_data[test_data$case == 0, ],
              id = "id",
-             case_indicator = "case",
-             matching_factors = list(sex = 'exact',
-                                     time = function(x, y) y >= x),
+             by = list(sex = 'exact',
+                       time = function(x, y) y >= x),
              no_controls = 10,
              seed = 10,
              verbose = FALSE)
@@ -20,11 +20,11 @@ test_that("Test replace TRUE", {
 test_that("Test replace FALSE", {
 
   expect_snapshot({
-    cc_match(test_data,
+    cc_match(cases    = test_data[test_data$case == 1, ],
+             controls = test_data[test_data$case == 0, ],
              id = "id",
-             case_indicator = "case",
-             matching_factors = list(sex = 'exact',
-                                     time = function(x, y) y >= x),
+             by = list(sex = 'exact',
+                       time = function(x, y) y >= x),
              no_controls = 10,
              seed = 10,
              replace = FALSE,
@@ -35,11 +35,11 @@ test_that("Test replace FALSE", {
 test_that("Test replace FALSE with few comparators", {
   expect_true({
     suppressWarnings({
-      temp <- cc_match(test_data[1:1000, ],
+      temp <- cc_match(cases    = test_data[test_data$case == 1, ],
+                       controls = test_data[test_data$case == 0, ],
                        id = "id",
-                       case_indicator = "case",
-                       matching_factors = list(sex = 'exact',
-                                               time = function(x, y) y >= x),
+                       by = list(sex = 'exact',
+                                 time = function(x, y) y >= x),
                        no_controls = 10,
                        seed = 10,
                        replace = FALSE,
@@ -48,19 +48,5 @@ test_that("Test replace FALSE with few comparators", {
       identical(sum(temp$case == 0),
                 length(unique(temp$id[temp$case == 0])))
     })
-  })
-})
-
-test_that("Test if no compartors are included in data", {
-  expect_error({
-    cc_match(test_data[1:10, ],
-             id = "id",
-             case_indicator = "case",
-             matching_factors = list(sex = 'exact',
-                                     time = function(x, y) y >= x),
-             no_controls = 10,
-             seed = 10,
-             replace = FALSE,
-             verbose = FALSE)
   })
 })
