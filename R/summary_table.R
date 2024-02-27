@@ -38,7 +38,7 @@
 #'    documentation of `epiR::epi.conf()` for more information.
 #'
 #' @return
-#'    A `data.table` with the following columns:
+#'    A `data.frame` with the following columns:
 #'    - `varname`: Including the name of the variable or the name of the category for factor variables
 #'    - `mean`: The mean of the variable, i.e. the proportion for binary variables
 #'    - `p25`: The 25th percentile (only for metric variables.)
@@ -282,7 +282,7 @@ summary_table <- function(data,
 
   }
 
-  return(data.table::data.table(out))
+  return(as.data.frame(out))
 
 }
 

@@ -44,7 +44,7 @@ type and method used for estimating confidence intervals. Check out the
 documentation of \code{epiR::epi.conf()} for more information.}
 }
 \value{
-A \code{data.table} with the following columns:
+A \code{data.frame} with the following columns:
 \itemize{
 \item \code{varname}: Including the name of the variable or the name of the category for factor variables
 \item \code{mean}: The mean of the variable, i.e. the proportion for binary variables
