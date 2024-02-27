@@ -5,25 +5,23 @@
 \title{Simpel matching}
 \usage{
 cc_match(
-  data,
-  case_indicator,
+  cases,
+  controls,
+  by,
   id,
-  matching_factors,
   no_controls,
-  replace = FALSE,
+  replace = TRUE,
   seed = NULL,
+  return_case_values = FALSE,
   verbose = TRUE
 )
 }
 \arguments{
-\item{data}{A \code{data.frame} including both cases and potential controls.}
+\item{cases}{A \code{data.frame} including cases.}
 
-\item{case_indicator}{Name of the variable that indicates if an observation
-is a case or a controls, codes as 1 if case and 0 if control.}
+\item{controls}{A \code{data.frame} including potential controls.}
 
-\item{id}{Name of the variable that identifies unique observations.}
-
-\item{matching_factors}{A list of matching factors and their accompanying
+\item{by}{A list of matching factors and their accompanying
 matching criteria either supplied as a function or as 'exact', if
 exact matching is requested for a specific variable. The matching
 function should take two arguments as input where the first argument
@@ -40,13 +38,22 @@ Example:
      time = function(x,y) y >= x)
 }\if{html}{\out{</div>}}}
 
+\item{id}{Name of the variable that identifies unique observations.}
+
 \item{no_controls}{The number of controls that should be matched to each
 case.}
 
 \item{replace}{Logical indicator if sampling of controls should be done with
 or without replacement. Default: \code{FALSE}.}
 
-\item{seed}{Optional seed used for the matching. Usefull for reproducibility.}
+\item{seed}{Optional seed used for the matching. Useful for reproducibility.}
+
+\item{return_case_values}{If \code{TRUE} the case value of the matching variable
+will be returned in the output data set, e.g., if you match on time,
+the controls in the output dataset will have a variable \code{case_time} which
+has the value of the case's time variable. This can be useful if you
+would like to start follow-up at the time of matching in your later
+analysis.}
 
 \item{verbose}{Logical indicator if default checks should be printed.
 Default: \code{TRUE}.}
@@ -58,7 +65,6 @@ A dataset of matched cases and controls.
 \item{\code{case}}{Case indicator}
 \item{\code{riskset}}{Riskset number/identifier}
 }
-All the variables included in the supplied dataset are also returned.
 }
 \description{
 Flexible and fast matching functions.
@@ -66,9 +72,9 @@ Flexible and fast matching functions.
 \details{
 The function returns a warning if the number of available controls is
 smaller than the number of controls requested for each case. In this
-case all availabe controls are matched to the case.
+case all available controls are matched to the case.
 
-If there are no matched availabe for a particular case, the case will
+If there are no matched available for a particular case, the case will
 be removed from the output dataset and a warning will be shown indicating
 the \code{id} of the case that has been removed.
 
@@ -76,13 +82,14 @@ If you want to match exact on a variable, please use the 'exact' indicator
 as shown above. This will improve the computation time.
 }
 \examples{
-require(rstpm2)
 
-cc_match(brcancer,
-         case_indicator = "hormon",
+require(rstpm2)
+cc_match(cases    = brcancer[brcancer$hormon == 1, ],
+         controls = brcancer[brcancer$hormon == 0, ],
          id = "id",
-         matching_factors = list(x2 = "exact",
-                                 rectime = function(x, y) y >= x),
-         no_controls = 1)
+         by = list(x2 = "exact",
+                   rectime = function(x, y) y >= x),
+         no_controls = 1,
+         replace = TRUE)
 
 }

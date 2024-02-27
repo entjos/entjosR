@@ -4,7 +4,7 @@
 #'
 #' @param cases  A `data.frame` including cases.
 #'
-#' @param cases  A `data.frame` including potential controls.
+#' @param controls  A `data.frame` including potential controls.
 #'
 #' @param id Name of the variable that identifies unique observations.
 #'
@@ -31,7 +31,14 @@
 #' @param replace Logical indicator if sampling of controls should be done with
 #'   or without replacement. Default: `FALSE`.
 #'
-#' @param seed Optional seed used for the matching. Usefull for reproducibility.
+#' @param seed Optional seed used for the matching. Useful for reproducibility.
+#'
+#' @param return_case_values If `TRUE` the case value of the matching variable
+#'   will be returned in the output data set, e.g., if you match on time,
+#'   the controls in the output dataset will have a variable `case_time` which
+#'   has the value of the case's time variable. This can be useful if you
+#'   would like to start follow-up at the time of matching in your later
+#'   analysis.
 #'
 #' @param verbose Logical indicator if default checks should be printed.
 #'   Default: `TRUE`.
@@ -46,9 +53,9 @@
 #' @details
 #'   The function returns a warning if the number of available controls is
 #'   smaller than the number of controls requested for each case. In this
-#'   case all availabe controls are matched to the case.
+#'   case all available controls are matched to the case.
 #'
-#'   If there are no matched availabe for a particular case, the case will
+#'   If there are no matched available for a particular case, the case will
 #'   be removed from the output dataset and a warning will be shown indicating
 #'   the `id` of the case that has been removed.
 #'
@@ -56,14 +63,15 @@
 #'   as shown above. This will improve the computation time.
 #'
 #' @examples
-#' require(rstpm2)
 #'
-#' cc_match(brcancer,
-#'          case_indicator = "hormon",
+#' require(rstpm2)
+#' cc_match(cases    = brcancer[brcancer$hormon == 1, ],
+#'          controls = brcancer[brcancer$hormon == 0, ],
 #'          id = "id",
 #'          by = list(x2 = "exact",
 #'                    rectime = function(x, y) y >= x),
-#'          no_controls = 1)
+#'          no_controls = 1,
+#'          replace = TRUE)
 #'
 #' @import data.table
 #' @export cc_match
@@ -73,8 +81,9 @@ cc_match <- function(cases,
                      by,
                      id,
                      no_controls,
-                     replace = FALSE,
+                     replace = TRUE,
                      seed = NULL,
+                     return_case_values = FALSE,
                      verbose = TRUE){
 
   # Data checks ----------------------------------------------------------------
@@ -90,7 +99,7 @@ cc_match <- function(cases,
   # Data preperations ----------------------------------------------------------
 
   # Please R CMD Check
-  strata <- ..id <- case <- used_ids <- NULL
+  strata <- ..id <- case <- riskset <- NULL
 
   # Only keep variables that are needed for matching
   vars_needed <- c(id, names(by))
@@ -161,12 +170,6 @@ cc_match <- function(cases,
           )
         )
 
-        # Combine riskset
-        case    <- case[   , list(id = get(..id), case = 1)]
-        matched <- matched[, list(id = get(..id), case = 0)]
-
-        comb <- rbind(case, matched)
-        comb$riskset <- i
       }
 
     } else {
@@ -174,18 +177,29 @@ cc_match <- function(cases,
 
       # Do matching
       matched <- matched[sample(.N, no_controls, replace)]
-
-      # Combine riskset
-      case    <- case[   , list(id = get(..id), case = 1)]
-      matched <- matched[, list(id = get(..id), case = 0)]
-
-      comb <- rbind(case, matched)
-      comb$riskset <- i
-
     }
 
-    if(!replace){
+    # Combine riskset ==========================================================
 
+    if(return_case_values){
+      case    <- case[ , .SD, .SDcols = c(id, names(by))]
+    } else {
+      case    <- case[ , list(id)]
+    }
+
+    case[, case := 1]
+    case[, riskset := i]
+
+    matched <- matched[, .SD, .SDcols = id]
+    matched[, case := 0]
+    matched[, riskset := i]
+
+    data.table::setcolorder(case   , c("id", "case", "riskset"))
+    data.table::setcolorder(matched, c("id", "case", "riskset"))
+
+    comb <- rbindlist(list(case, matched), fill = TRUE)
+
+    if(!replace){
       # Remove used controls if replace = FALSE
       controls <<- eval(
         substitute(
@@ -200,6 +214,13 @@ cc_match <- function(cases,
     return(comb)
 
   }) |> data.table::rbindlist()
+
+  # Prepare output -------------------------------------------------------------
+
+  if(return_case_values){
+    risksets <- tidyr::fill(risksets, names(by), .direction = "down")
+    colnames(risksets) <- c("id", "case", "riskset", paste0("case_", names(by)))
+  }
 
   # Report diagnostics if needed -----------------------------------------------
   if(verbose){
@@ -217,6 +238,6 @@ cc_match <- function(cases,
 
   }
 
-  return(risksets)
+  return(as.data.frame(risksets))
 
 }

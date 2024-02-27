@@ -50,3 +50,24 @@ test_that("Test replace FALSE with few comparators", {
     })
   })
 })
+
+test_that("All matching varaible are the same in risksets", {
+  expect_equal({
+    suppressWarnings({
+      temp <- cc_match(cases    = test_data[test_data$case == 1, ],
+                       controls = test_data[test_data$case == 0, ],
+                       id = "id",
+                       by = list(sex = 'exact',
+                                 time = function(x, y) y >= x),
+                       no_controls = 10,
+                       seed = 10,
+                       replace = FALSE,
+                       verbose = FALSE,
+                       return_case_values = TRUE) |>
+        as.data.table()
+
+      max(temp[, sum(var(case_sex), var(case_time)), by = riskset]$V1)
+
+    })
+  }, 0)
+})
