@@ -60,7 +60,7 @@
 #' @examples
 #' require(rstpm2)
 #'
-#' matching(brcancer,
+#' cc_match(brcancer,
 #'          case_indicator = "hormon",
 #'          id = "id",
 #'          matching_factors = list(x2 = "exact",
@@ -68,9 +68,9 @@
 #'          no_controls = 1)
 #'
 #' @import data.table
-#' @export matching
+#' @export cc_match
 
-matching <- function(data,
+cc_match <- function(data,
                      case_indicator,
                      id,
                      matching_factors,
@@ -82,7 +82,7 @@ matching <- function(data,
   # Data preperations ----------------------------------------------------------
 
   # Please R CMD Check
-  strata <- ..id <- case <- NULL
+  strata <- ..id <- case <- used_ids <- NULL
 
   # Only keep variables that are needed for matching
   vars_needed <- c(id, case_indicator, names(matching_factors))
@@ -107,7 +107,7 @@ matching <- function(data,
   }
 
   # Matching -------------------------------------------------------------------
-  matched_controls <- lapply(seq_len(nrow(cases)), function(i){
+  risksets <- lapply(seq_len(nrow(cases)), function(i){
 
     # Set seed if supplied
     if(!is.null(seed)){
@@ -117,23 +117,23 @@ matching <- function(data,
     case <- cases[i, ]
 
     if(length(exact_vars) > 0){
-      # Find matches within same strata
-      matches <- controls[strata == case$strata][["subset"]][[1]]
+      # Find matched within same strata
+      matched <- controls[strata == case$strata][["subset"]][[1]]
     } else {
-      matches <- controls
+      matched <- controls
     }
 
     # Apply additional matching criteria
     for (x in names(matching_f)) {
 
-      subset_var <- matching_f[[x]](case[, get(x)], matches[, get(x)])
-      matches <- matches[subset_var]
+      subset_var <- matching_f[[x]](case[, get(x)], matched[, get(x)])
+      matched <- matched[subset_var]
 
     }
 
-    if(nrow(matches) < no_controls){
+    if(nrow(matched) < no_controls){
 
-      if (nrow(matches) == 0){
+      if (nrow(matched) == 0){
         # If no controls are availabe ==========================================
         cli::cli_warn(
           c(
@@ -156,9 +156,9 @@ matching <- function(data,
 
         # Combine riskset
         case    <- case[   , list(id = get(..id), case = 1)]
-        matches <- matches[, list(id = get(..id), case = 0)]
+        matched <- matched[, list(id = get(..id), case = 0)]
 
-        comb <- rbind(case, matches)
+        comb <- rbind(case, matched)
         comb$riskset <- i
       }
 
@@ -166,14 +166,27 @@ matching <- function(data,
       # If enough controls are available =======================================
 
       # Do matching
-      matches <- matches[sample(.N, no_controls, replace)]
+      matched <- matched[sample(.N, no_controls, replace)]
 
       # Combine riskset
       case    <- case[   , list(id = get(..id), case = 1)]
-      matches <- matches[, list(id = get(..id), case = 0)]
+      matched <- matched[, list(id = get(..id), case = 0)]
 
-      comb <- rbind(case, matches)
+      comb <- rbind(case, matched)
       comb$riskset <- i
+
+    }
+
+    if(!replace){
+
+      # Remove used controls if replace = FALSE
+      controls <<- eval(
+        substitute(
+          controls[, list(subset = lapply(.SD[[1]], "[", !(id %in% matched$id))),
+                   by = strata],
+          list(matched = matched)
+        )
+      )
 
     }
 
@@ -183,23 +196,23 @@ matching <- function(data,
 
   # Create output dataset ------------------------------------------------------
 
-   additional_vars <- colnames(data)[!(colnames(data) %in% vars_needed)]
+  additional_vars <- colnames(data)[!(colnames(data) %in% vars_needed)]
 
   if(length(additional_vars) > 0){
     # Add all additional data
-    out <- merge(matched_controls,
+    out <- merge(risksets,
                  data[, c("id", additional_vars)],
                  by.x = "id",
                  by.y = id,
                  all.x = TRUE)
   } else {
-    out <- matched_controls
+    out <- risksets
   }
 
   # Report diagnostics if needed -----------------------------------------------
   if(verbose){
 
-    total_comp  <- out[get(case_indicator) == 0, .N]
+    total_comp  <- out[case == 0, .N]
     unique_comp <- unique(out, by = "id")[case == 0, .N]
     prop_unique <- round(unique_comp/total_comp, 3) * 100
 
