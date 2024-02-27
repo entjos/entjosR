@@ -109,7 +109,7 @@ documentation of <code><a href="https://rdrr.io/pkg/epiR/man/epi.conf.html" clas
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>A <code>data.table</code> with the following columns:</p><ul><li><p><code>varname</code>: Including the name of the variable or the name of the category for factor variables</p></li>
+<p>A <code>data.frame</code> with the following columns:</p><ul><li><p><code>varname</code>: Including the name of the variable or the name of the category for factor variables</p></li>
 <li><p><code>mean</code>: The mean of the variable, i.e. the proportion for binary variables</p></li>
 <li><p><code>p25</code>: The 25th percentile (only for metric variables.)</p></li>
 <li><p><code>p75</code>: The 75th percentile (only for metric varaibles.)</p></li>
@@ -131,36 +131,34 @@ corresponding value for the specific strata the row belongs to.</p>
 <span class="r-in"><span><span class="co"># Simple example</span></span></span>
 <span class="r-in"><span><span class="fu">summary_table</span><span class="op">(</span><span class="va">brcancer</span>,</span></span>
 <span class="r-in"><span>              vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x1"</span>, <span class="st">"x2"</span>, <span class="st">"x3"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    varname  mean   p25   p75   min   max n_category n_total  n_NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;char&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;int&gt; &lt;int&gt;     &lt;lgcl&gt;   &lt;int&gt; &lt;int&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1:      x1    53    46    61    21    80         NA     686     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2:      x2     2     1     2     1     2         NA     686     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3:      x3    25    20    35     3   120         NA     686     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   varname mean p25 p75 min max n_category n_total n_NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      x1   53  46  61  21  80         NA     686    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      x2    2   1   2   1   2         NA     686    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3      x3   25  20  35   3 120         NA     686    0</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Example with stratas</span></span></span>
 <span class="r-in"><span><span class="fu">summary_table</span><span class="op">(</span><span class="va">brcancer</span>,</span></span>
 <span class="r-in"><span>              vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x1"</span>, <span class="st">"x2"</span>, <span class="st">"x3"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>              strata <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"hormon"</span>, <span class="st">"x4"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     hormon    x4 varname  mean   p25   p75   min   max n_category n_total  n_NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      &lt;int&gt; &lt;int&gt;  &lt;char&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;int&gt; &lt;int&gt;     &lt;lgcl&gt;   &lt;int&gt; &lt;int&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1:      0     2      x1  50.0  45.0  59.0    21    80         NA     281     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2:      0     2      x2   1.0   1.0   2.0     1     2         NA     281     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  3:      0     2      x3  25.0  20.0  35.0     5   120         NA     281     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  4:      1     2      x1  59.0  51.0  63.0    32    80         NA     163     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  5:      1     2      x2   2.0   2.0   2.0     1     2         NA     163     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  6:      1     2      x3  25.0  20.0  35.0     7   100         NA     163     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  7:      0     3      x1  50.0  43.5  56.5    29    77         NA     111     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  8:      0     3      x2   1.0   1.0   2.0     1     2         NA     111     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  9:      0     3      x3  30.0  22.0  41.0     3    80         NA     111     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10:      1     3      x1  57.5  47.0  64.0    33    74         NA      50     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11:      1     3      x2   2.0   2.0   2.0     1     2         NA      50     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12:      1     3      x3  28.0  23.0  35.0    12    60         NA      50     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13:      0     1      x1  50.0  46.0  61.2    37    69         NA      48     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14:      0     1      x2   1.0   1.0   2.0     1     2         NA      48     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15:      0     1      x3  25.0  19.0  35.0    10    65         NA      48     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16:      1     1      x1  56.0  49.0  61.0    37    79         NA      33     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17:      1     1      x2   2.0   2.0   2.0     1     2         NA      33     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18:      1     1      x3  25.0  18.0  30.0     4    56         NA      33     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    hormon x4 varname mean  p25  p75 min max n_category n_total n_NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       0  2      x1 50.0 45.0 59.0  21  80         NA     281    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       0  2      x2  1.0  1.0  2.0   1   2         NA     281    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       0  2      x3 25.0 20.0 35.0   5 120         NA     281    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4       1  2      x1 59.0 51.0 63.0  32  80         NA     163    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5       1  2      x2  2.0  2.0  2.0   1   2         NA     163    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6       1  2      x3 25.0 20.0 35.0   7 100         NA     163    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7       0  3      x1 50.0 43.5 56.5  29  77         NA     111    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8       0  3      x2  1.0  1.0  2.0   1   2         NA     111    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9       0  3      x3 30.0 22.0 41.0   3  80         NA     111    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10      1  3      x1 57.5 47.0 64.0  33  74         NA      50    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11      1  3      x2  2.0  2.0  2.0   1   2         NA      50    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12      1  3      x3 28.0 23.0 35.0  12  60         NA      50    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13      0  1      x1 50.0 46.0 61.2  37  69         NA      48    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14      0  1      x2  1.0  1.0  2.0   1   2         NA      48    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15      0  1      x3 25.0 19.0 35.0  10  65         NA      48    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16      1  1      x1 56.0 49.0 61.0  37  79         NA      33    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17      1  1      x2  2.0  2.0  2.0   1   2         NA      33    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18      1  1      x3 25.0 18.0 30.0   4  56         NA      33    0</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Example with strata and rates</span></span></span>
 <span class="r-in"><span><span class="va">brcancer</span><span class="op">$</span><span class="va">x4</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">brcancer</span><span class="op">$</span><span class="va">x4</span><span class="op">)</span></span></span>
@@ -172,34 +170,32 @@ corresponding value for the specific strata the row belongs to.</p>
 <span class="r-in"><span>              event     <span class="op">=</span> <span class="st">"censrec"</span>,</span></span>
 <span class="r-in"><span>              st        <span class="op">=</span> <span class="st">"rectime"</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> → Rates will only be estimted for factor variables in `vars`.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     hormon varname   mean   p25   p75   min   max n_category n_total  n_NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      &lt;int&gt;  &lt;char&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt;      &lt;int&gt;   &lt;int&gt; &lt;int&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1:      0      x1 50.000    45    59    21    80         NA     440     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2:      0      x2  1.000     1     2     1     2         NA     440     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  3:      0      x3 25.000    20    35     3   120         NA     440     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  4:      0    x4 1  0.109    NA    NA     0     1         48     440     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  5:      0    x4 2  0.639    NA    NA     0     1        281     440     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  6:      0    x4 3  0.252    NA    NA     0     1        111     440     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  7:      1      x1 58.000    50    63    32    80         NA     246     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  8:      1      x2  2.000     2     2     1     2         NA     246     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  9:      1      x3 25.000    20    35     4   100         NA     246     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10:      1    x4 1  0.134    NA    NA     0     1         33     246     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11:      1    x4 2  0.663    NA    NA     0     1        163     246     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12:      1    x4 3  0.203    NA    NA     0     1         50     246     0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     no_events t_at_risk   p_events     rate_est   rate_lower   rate_upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         &lt;int&gt;     &lt;int&gt;      &lt;num&gt;        &lt;num&gt;        &lt;num&gt;        &lt;num&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1:        NA        NA         NA           NA           NA           NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2:        NA        NA         NA           NA           NA           NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  3:        NA        NA         NA           NA           NA           NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  4:        12     62398 0.05853659 0.0001923139 9.937138e-05 0.0003359336</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  5:       137    299081 0.66829268 0.0004580699 3.845799e-04 0.0005415135</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  6:        56    104802 0.27317073 0.0005343409 4.036354e-04 0.0006938862</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  7:        NA        NA         NA           NA           NA           NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  8:        NA        NA         NA           NA           NA           NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  9:        NA        NA         NA           NA           NA           NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10:         6     45477 0.06382979 0.0001319348 4.841776e-05 0.0002871666</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11:        65    210621 0.69148936 0.0003086112 2.381796e-04 0.0003933503</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12:        23     49021 0.24468085 0.0004691867 2.974241e-04 0.0007040104</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    hormon varname   mean p25 p75 min max n_category n_total n_NA no_events</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       0      x1 50.000  45  59  21  80         NA     440    0        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       0      x2  1.000   1   2   1   2         NA     440    0        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       0      x3 25.000  20  35   3 120         NA     440    0        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4       0    x4 1  0.109  NA  NA   0   1         48     440    0        12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5       0    x4 2  0.639  NA  NA   0   1        281     440    0       137</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6       0    x4 3  0.252  NA  NA   0   1        111     440    0        56</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7       1      x1 58.000  50  63  32  80         NA     246    0        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8       1      x2  2.000   2   2   1   2         NA     246    0        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9       1      x3 25.000  20  35   4 100         NA     246    0        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10      1    x4 1  0.134  NA  NA   0   1         33     246    0         6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11      1    x4 2  0.663  NA  NA   0   1        163     246    0        65</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12      1    x4 3  0.203  NA  NA   0   1         50     246    0        23</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    t_at_risk   p_events     rate_est   rate_lower   rate_upper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1         NA         NA           NA           NA           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2         NA         NA           NA           NA           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3         NA         NA           NA           NA           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4      62398 0.05853659 0.0001923139 9.937138e-05 0.0003359336</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5     299081 0.66829268 0.0004580699 3.845799e-04 0.0005415135</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6     104802 0.27317073 0.0005343409 4.036354e-04 0.0006938862</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7         NA         NA           NA           NA           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8         NA         NA           NA           NA           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9         NA         NA           NA           NA           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10     45477 0.06382979 0.0001319348 4.841776e-05 0.0002871666</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11    210621 0.69148936 0.0003086112 2.381796e-04 0.0003933503</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12     49021 0.24468085 0.0004691867 2.974241e-04 0.0007040104</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
