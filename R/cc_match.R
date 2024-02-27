@@ -79,6 +79,16 @@ cc_match <- function(data,
                      seed = NULL,
                      verbose = TRUE){
 
+  # Data checks ----------------------------------------------------------------
+
+  if(sum(data[[case_indicator]] == 0) < 1){
+    cli::cli_abort(
+      c(
+        x = "There are no controls included in {.var data}.",
+        i = "Check that you included your controls in {.var data}."
+      )
+    )
+  }
   # Data preperations ----------------------------------------------------------
 
   # Please R CMD Check
