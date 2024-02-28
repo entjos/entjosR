@@ -6,7 +6,9 @@
 #'
 #' @param controls  A `data.frame` including potential controls.
 #'
-#' @param id Name of the variable that identifies unique observations.
+#' @param id_name Name of the variable that identifies unique observations.
+#'    Please make sure that your dataset does not include a varaible named
+#'    `id_name`.
 #'
 #' @param by A list of matching factors and their accompanying
 #'    matching criteria either supplied as a function or as 'exact', if
@@ -82,7 +84,7 @@
 cc_match <- function(cases,
                      controls,
                      by,
-                     id,
+                     id_name,
                      no_controls,
                      replace = TRUE,
                      seed = NULL,
@@ -99,16 +101,26 @@ cc_match <- function(cases,
       )
     )
   }
+
+  if("id_name" %in% c(colnames(cases), colnames(controls))){
+    cli::cli_abort(
+      x = "You're datasets are not allows to include a varaible names `id_name`",
+      i = "Please rename your variable and try again."
+    )
+  }
   # Data preperations ----------------------------------------------------------
 
   # Please R CMD Check
-  strata <- ..id <- case <- riskset <- NULL
+  strata <- case <- riskset <- NULL
 
   # Only keep variables that are needed for matching
-  vars_needed <- c(id, names(by))
+  vars_needed <- c(id_name, names(by))
 
   cases    <- data.table::copy(data.table::as.data.table(cases[, vars_needed]))
   controls <- data.table::copy(data.table::as.data.table(controls[, vars_needed]))
+
+  colnames(cases)    <- gsub(id_name, "id", colnames(cases), fixed = TRUE)
+  colnames(controls) <- gsub(id_name, "id", colnames(controls), fixed = TRUE)
 
   # Find out which variables should be matched exact
   exact_vars <- names(by[by == "exact"])
@@ -137,9 +149,9 @@ cc_match <- function(cases,
 
     if(length(exact_vars) > 0){
       # Find matched within same strata
-      matched <- controls[strata == case$strata][["subset"]][[1]]
+      matched <- controls[strata == case$strata][["subset"]][[1]][id != case$id]
     } else {
-      matched <- controls
+      matched <- controls[id != case$id]
     }
 
     # Apply additional matching criteria
@@ -156,7 +168,7 @@ cc_match <- function(cases,
         # If no controls are availabe ==========================================
         cli::cli_warn(
           c(
-            x = "No controls available for {case[[id]]}.",
+            x = "No controls available for {case$id}.",
             i = "I'll remove this control form the output dataset."
           )
         )
@@ -168,7 +180,7 @@ cc_match <- function(cases,
 
         cli::cli_warn(
           c(
-            x = "Less controls available than needed for case {case[[id]]}.",
+            x = "Less controls available than needed for case {case$id}.",
             i = "I'll only take those controls available."
           )
         )
@@ -185,7 +197,7 @@ cc_match <- function(cases,
     # Combine riskset ==========================================================
 
     if(return_case_values){
-      case    <- case[ , .SD, .SDcols = c(id, names(by))]
+      case    <- case[ , .SD, .SDcols = c("id", names(by))]
     } else {
       case    <- case[ , list(id)]
     }
@@ -193,7 +205,7 @@ cc_match <- function(cases,
     case[, case := 1]
     case[, riskset := i]
 
-    matched <- matched[, .SD, .SDcols = id]
+    matched <- matched[, .SD, .SDcols = "id"]
     matched[, case := 0]
     matched[, riskset := i]
 
@@ -206,7 +218,8 @@ cc_match <- function(cases,
       # Remove used controls if replace = FALSE
       controls <<- eval(
         substitute(
-          controls[, list(subset = lapply(.SD[[1]], "[", !(id %in% matched$id))),
+          controls[,
+                   list(subset = lapply(.SD[[1]], "[", !(id %in% matched$id))),
                    by = strata],
           list(matched = matched)
         )
@@ -221,7 +234,33 @@ cc_match <- function(cases,
   # Prepare output -------------------------------------------------------------
 
   if(return_case_values){
-    risksets <- tidyr::fill(risksets, names(by), .direction = "down")
+    # Fill character values ====================================================
+
+    # Find character values
+    char_cols <- colnames(risksets)[vapply(risksets, is.character, TRUE)]
+
+    # Convert to factors
+    risksets[ , (char_cols) := lapply(.SD, factor),
+              .SDcols = char_cols]
+
+    # Save factor levels
+    lev <- lapply(char_cols, function(x) levels(risksets[[x]])) |>
+      setNames(char_cols)
+
+    # Convert factors to integer
+    risksets[ , (char_cols) := lapply(.SD, as.integer), .SDcols = char_cols]
+
+    # Replace missing values
+    risksets[ , (char_cols) := lapply(.SD, nafill, "locf"),
+              .SDcols = char_cols]
+
+    # Convert integers to characters again
+    for (col in char_cols) set(risksets, NULL, col, lev[[col]][risksets[[col]]])
+
+    # Fill non-character values ================================================
+    setnafill(risksets, type = "locf",
+              cols = colnames(risksets)[!(colnames(risksets) %in% char_cols)])
+
     colnames(risksets) <- c("id", "case", "riskset", paste0("case_", names(by)))
   }
 
@@ -229,7 +268,7 @@ cc_match <- function(cases,
   if(verbose){
 
     total_comp  <- risksets[case == 0, .N]
-    unique_comp <- unique(risksets, by = "id")[case == 0, .N]
+    unique_comp <- unique(risksets, by = id)[case == 0, .N]
     prop_unique <- round(unique_comp/total_comp, 3) * 100
 
     cat("----------------------------------------\n")
@@ -240,6 +279,9 @@ cc_match <- function(cases,
 
 
   }
+
+  # Return original id name
+  colnames(risksets)[[1]] <- id_name
 
   return(as.data.frame(risksets))
 
