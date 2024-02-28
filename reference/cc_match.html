@@ -52,7 +52,7 @@
 <span>  <span class="va">cases</span>,</span>
 <span>  <span class="va">controls</span>,</span>
 <span>  <span class="va">by</span>,</span>
-<span>  <span class="va">id_name</span>,</span>
+<span>  <span class="va">id</span>,</span>
 <span>  <span class="va">no_controls</span>,</span>
 <span>  replace <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -87,10 +87,8 @@ matching, i.e., requiering the control to be alive at the time of matching.</p>
 <span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>     <span class="at">time =</span> <span class="cf">function</span>(x,y) y <span class="sc">&gt;=</span> x)</span></code></pre><p></p></div></dd>
 
 
-<dt>id_name</dt>
-<dd><p>Name of the variable that identifies unique observations.
-Please make sure that your dataset does not include a varaible named
-<code>id_name</code>.</p></dd>
+<dt>id</dt>
+<dd><p>Name of the variable that identifies unique observations.</p></dd>
 
 
 <dt>no_controls</dt>
@@ -176,10 +174,21 @@ as shown above. This will improve the computation time.</p>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> I'll remove this control form the output dataset.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span><span style="color: #BB0000;">✖</span> No controls available for 468.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> I'll remove this control form the output dataset.</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in cc_match(cases = brcancer[brcancer$hormon == 1, ], controls = brcancer[brcancer$hormon ==     0, ], id = "id", by = list(x2 = "exact", rectime = function(x,     y) y &gt;= x), no_controls = 1, replace = TRUE):</span> object 'id' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ----------------------------------------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> No. of comparators: 242 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> No. of unique comparators: 124 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Proportion of unique compartors: 51.2 %</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ----------------------------------------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">risksets</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'risksets' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    id case riskset</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   2    1       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 432    0       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3   3    1       2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 240    0       2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5   4    1       3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  46    0       3</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
