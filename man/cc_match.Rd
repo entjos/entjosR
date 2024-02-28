@@ -8,7 +8,7 @@ cc_match(
   cases,
   controls,
   by,
-  id_name,
+  id,
   no_controls,
   replace = TRUE,
   seed = NULL,
@@ -38,9 +38,7 @@ Example:
      time = function(x,y) y >= x)
 }\if{html}{\out{</div>}}}
 
-\item{id_name}{Name of the variable that identifies unique observations.
-Please make sure that your dataset does not include a varaible named
-\code{id_name}.}
+\item{id}{Name of the variable that identifies unique observations.}
 
 \item{no_controls}{The number of controls that should be matched to each
 case.}

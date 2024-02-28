@@ -6,9 +6,7 @@
 #'
 #' @param controls  A `data.frame` including potential controls.
 #'
-#' @param id_name Name of the variable that identifies unique observations.
-#'    Please make sure that your dataset does not include a varaible named
-#'    `id_name`.
+#' @param id Name of the variable that identifies unique observations.
 #'
 #' @param by A list of matching factors and their accompanying
 #'    matching criteria either supplied as a function or as 'exact', if
@@ -84,7 +82,7 @@
 cc_match <- function(cases,
                      controls,
                      by,
-                     id_name,
+                     id,
                      no_controls,
                      replace = TRUE,
                      seed = NULL,
@@ -102,25 +100,19 @@ cc_match <- function(cases,
     )
   }
 
-  if("id_name" %in% c(colnames(cases), colnames(controls))){
-    cli::cli_abort(
-      x = "You're datasets are not allows to include a varaible names `id_name`",
-      i = "Please rename your variable and try again."
-    )
-  }
   # Data preperations ----------------------------------------------------------
 
   # Please R CMD Check
   strata <- case <- riskset <- NULL
 
   # Only keep variables that are needed for matching
-  vars_needed <- c(id_name, names(by))
+  vars_needed <- c(id, names(by))
 
-  cases    <- data.table::copy(data.table::as.data.table(cases[, vars_needed]))
-  controls <- data.table::copy(data.table::as.data.table(controls[, vars_needed]))
+  cases    <- data.table::as.data.table(cases)[   , .SD, .SDcols = vars_needed]
+  controls <- data.table::as.data.table(controls)[, .SD, .SDcols = vars_needed]
 
-  colnames(cases)    <- gsub(id_name, "id", colnames(cases), fixed = TRUE)
-  colnames(controls) <- gsub(id_name, "id", colnames(controls), fixed = TRUE)
+  colnames(cases)    <- gsub(id, "id", colnames(cases), fixed = TRUE)
+  colnames(controls) <- gsub(id, "id", colnames(controls), fixed = TRUE)
 
   # Find out which variables should be matched exact
   exact_vars <- names(by[by == "exact"])
@@ -245,7 +237,7 @@ cc_match <- function(cases,
 
     # Save factor levels
     lev <- lapply(char_cols, function(x) levels(risksets[[x]])) |>
-      setNames(char_cols)
+      stats::setNames(char_cols)
 
     # Convert factors to integer
     risksets[ , (char_cols) := lapply(.SD, as.integer), .SDcols = char_cols]
@@ -281,7 +273,7 @@ cc_match <- function(cases,
   }
 
   # Return original id name
-  colnames(risksets)[[1]] <- id_name
+  colnames(risksets)[[1]] <- id
 
   return(as.data.frame(risksets))
 

@@ -9,7 +9,7 @@ test_that("Test replace TRUE", {
   expect_snapshot({
     cc_match(cases    = test_data[test_data$case == 1, ],
              controls = test_data[test_data$case == 0, ],
-             id_name = "id",
+             id = "id",
              by = list(sex = 'exact',
                        time = function(x, y) y >= x),
              no_controls = 10,
@@ -24,7 +24,7 @@ test_that("Test replace FALSE", {
   expect_snapshot({
     cc_match(cases    = test_data[test_data$case == 1, ],
              controls = test_data[test_data$case == 0, ],
-             id_name = "id",
+             id = "id",
              by = list(sex = 'exact',
                        time = function(x, y) y >= x),
              no_controls = 10,
@@ -40,7 +40,7 @@ test_that("Test replace FALSE with few comparators", {
     suppressWarnings({
       temp <- cc_match(cases    = test_data[test_data$case == 1, ],
                        controls = test_data[test_data$case == 0, ],
-                       id_name = "id",
+                       id = "id",
                        by = list(sex = 'exact',
                                  time = function(x, y) y >= x),
                        no_controls = 10,
@@ -59,7 +59,7 @@ test_that("All matching varaible are the same in risksets", {
     suppressWarnings({
       temp <- cc_match(cases    = test_data[test_data$case == 1, ],
                        controls = test_data[test_data$case == 0, ],
-                       id_name = "id",
+                       id = "id",
                        by = list(sex = 'exact',
                                  time = function(x, y) y >= x),
                        no_controls = 10,
@@ -80,7 +80,7 @@ test_that("Test matching of character vectors", {
   expect_snapshot({
     cc_match(cases    = test_data[test_data$case == 1, ],
              controls = test_data[test_data$case == 0, ],
-             id_name = "id",
+             id = "id",
              by = list(sex = 'exact',
                        time = function(x, y) y >= x,
                        letters = 'exact'),
@@ -99,7 +99,7 @@ test_that("Test never match the same individual as the case", {
     suppressWarnings({
       temp <- cc_match(cases    = test_data[test_data$case == 1, ],
                        controls = test_data[test_data$case == 1, ],
-                       id_name = "id",
+                       id = "id",
                        by = list(sex = 'exact',
                                  time = function(x, y) y >= x,
                                  letters = 'exact'),
@@ -119,4 +119,30 @@ test_that("Test never match the same individual as the case", {
     })
   }, 1)
 })
+
+test_that("Test different id name", {
+
+  expect_snapshot({
+    suppressWarnings({
+
+      test_data2 <- test_data
+      colnames(test_data2)[[1]] <- "lopnr"
+
+      temp <- cc_match(cases    = test_data2[test_data$case == 1, ],
+                       controls = test_data2[test_data$case == 0, ],
+                       id = "lopnr",
+                       by = list(sex = 'exact',
+                                 time = function(x, y) y >= x,
+                                 letters = 'exact'),
+                       no_controls = 10,
+                       seed = 10,
+                       replace = TRUE,
+                       verbose = FALSE,
+                       return_case_values = TRUE) |>
+        as.data.table()
+
+    })
+  })
+})
+
 

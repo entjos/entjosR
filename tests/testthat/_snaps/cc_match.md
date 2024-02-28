@@ -2,8 +2,8 @@
 
     Code
       as.data.table(cc_match(cases = test_data[test_data$case == 1, ], controls = test_data[
-        test_data$case == 0, ], id_name = "id", by = list(sex = "exact", time = function(
-        x, y) y >= x), no_controls = 10, seed = 10, verbose = FALSE))
+        test_data$case == 0, ], id = "id", by = list(sex = "exact", time = function(x,
+        y) y >= x), no_controls = 10, seed = 10, verbose = FALSE))
     Output
                id  case riskset
             <int> <num>   <int>
@@ -23,8 +23,8 @@
 
     Code
       as.data.table(cc_match(cases = test_data[test_data$case == 1, ], controls = test_data[
-        test_data$case == 0, ], id_name = "id", by = list(sex = "exact", time = function(
-        x, y) y >= x), no_controls = 10, seed = 10, replace = FALSE, verbose = FALSE))
+        test_data$case == 0, ], id = "id", by = list(sex = "exact", time = function(x,
+        y) y >= x), no_controls = 10, seed = 10, replace = FALSE, verbose = FALSE))
     Output
                id  case riskset
             <int> <num>   <int>
@@ -44,8 +44,8 @@
 
     Code
       as.data.table(cc_match(cases = test_data[test_data$case == 1, ], controls = test_data[
-        test_data$case == 0, ], id_name = "id", by = list(sex = "exact", time = function(
-        x, y) y >= x, letters = "exact"), no_controls = 10, seed = 10, replace = FALSE,
+        test_data$case == 0, ], id = "id", by = list(sex = "exact", time = function(x,
+        y) y >= x, letters = "exact"), no_controls = 10, seed = 10, replace = FALSE,
       verbose = FALSE, return_case_values = TRUE))
     Output
                id  case riskset case_sex case_time case_letters
