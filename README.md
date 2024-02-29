@@ -1,6 +1,7 @@
 <!-- badges: start -->
   [![R-CMD-check](https://github.com/entjos/entjosR/workflows/R-CMD-check/badge.svg)](https://github.com/entjos/entjosR/actions)
-  <!-- badges: end -->
+  [![Codecov test coverage](https://codecov.io/gh/entjos/entjosR/branch/main/graph/badge.svg)](https://app.codecov.io/gh/entjos/entjosR?branch=main)
+<!-- badges: end -->
 
 # entjosR
 
