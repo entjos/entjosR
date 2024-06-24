@@ -128,7 +128,7 @@ test_that("Test different id name", {
       test_data2 <- test_data
       colnames(test_data2)[[1]] <- "lopnr"
 
-      temp <- cc_match(cases    = test_data2[test_data$case == 1, ],
+      cc_match(cases    = test_data2[test_data$case == 1, ],
                        controls = test_data2[test_data$case == 0, ],
                        id = "lopnr",
                        by = list(sex = 'exact',
