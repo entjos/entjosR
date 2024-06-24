@@ -23,6 +23,12 @@
 #'    in the `event` argument for each level of variables in `var`. Rates can
 #'    only be estimated for factor variables in `var`.
 #'
+#' @param get_no_events
+#'    If `TRUE` the summary tables includes the number of events specified
+#'    in the `event` argument for each level of variables in `var`. This
+#'    argument is obsolete if `get_rates == TRUE` as the number of events is
+#'    automatically added to the table in this case.
+#'
 #' @param  event
 #'    Name of the event indicator that should be used to compute rates.
 #'    Needs to be specified if `get_rates == TRUE`.
@@ -84,6 +90,7 @@ summary_table <- function(data,
                           strata = NULL,
                           overall = FALSE,
                           get_rates = FALSE,
+                          get_no_events = FALSE,
                           event = NULL,
                           st = NULL,
                           control = list(ctype = "inc.rate",
@@ -95,10 +102,17 @@ summary_table <- function(data,
 
   # Checks --------------------------------------------------------------------
 
-  if(get_rates & is.null(event) & is.null(st)){
+  if(get_rates && is.null(event) & is.null(st)){
     cli::cli_abort(
       c(x = paste("For computing rates both the `event` and `st`",
                   "argument need to be specified."))
+    )
+  }
+
+  if(get_no_events && is.null(event)){
+    cli::cli_abort(
+      c(x = paste("For computing the number of events the `event`",
+                  "argument needs to be specified."))
     )
   }
 
@@ -137,8 +151,8 @@ summary_table <- function(data,
     )
   }
 
-  if(overall & is.null(strata)){
-    cli::cli_alert(
+  if(overall && is.null(strata)){
+    cli::cli_alert_info(
       paste("Setting overall to TRUE without specifying the strata argument",
             "is most likely useless.")
     )
@@ -147,7 +161,7 @@ summary_table <- function(data,
   if(get_rates){
 
     if(any(vapply(df[, vars, with = FALSE], is.factor, logical(1)))){
-      cli::cli_alert(
+      cli::cli_alert_warning(
         c(i = "Rates will only be estimted for factor variables in `vars`.")
       )
     } else {
@@ -157,6 +171,18 @@ summary_table <- function(data,
                     "`vars` is of class `factor`."))
       )
     }
+
+    # no. of events is already outputted from the summary_rate()
+    get_no_events <- FALSE
+
+  }
+
+  if(!is.null(event) && any(!(unique(df[[event]]) %in% 0:1))){
+    cli::cli_alert_warning(
+      c(i = paste("The event variable is not 0/1 coded. If this is intendet,
+                  you may ignore this warning.")
+      )
+    )
   }
 
   # Create stratified summary table -------------------------------------------
@@ -167,13 +193,13 @@ summary_table <- function(data,
     strata_values <- lapply(strata, function(x){unique(df[[x]])})
     strata_values <- stats::setNames(strata_values, strata)
 
-    # Create matrix with posssible combination of unique strata values
+    # Create matrix with possible combination of unique strata values
     stratas <- expand.grid(strata_values)
 
     # Create a vector of concatenated strata values
     concat_stratas <- do.call(paste, df[, strata, with = FALSE])
 
-    # Subset each strat and obtain summary variables
+    # Subset each strata and obtain summary variables
     out_strat <- lapply(seq_len(nrow(stratas)), function(i){
 
       if(length(strata) > 1){
@@ -199,7 +225,7 @@ summary_table <- function(data,
       if(get_rates){
 
         temp_out_rates <-
-          lapply(vars[vapply(df[, vars, with = FALSE], is.factor,  logical(1))],
+          lapply(vars[vapply(df[, vars, with = FALSE], is.factor, logical(1))],
                  function(x){
                    summary_rates(df      = strata_df,
                                  var     = x,
@@ -211,6 +237,20 @@ summary_table <- function(data,
         return(merge(temp_out, temp_out_rates,
                      by = "varname",
                      all.x = TRUE))
+
+      } else if (get_no_events){
+
+        temp_out_no_events <-
+          lapply(vars[vapply(df[, vars, with = FALSE], is.factor, logical(1))],
+                 function(x){
+                   summary_no_events(df      = strata_df,
+                                     var     = x,
+                                     event   = event)
+                 }) |> data.table::rbindlist()
+
+        out_overall <- merge(temp_out, temp_out_no_events,
+                             by = "varname",
+                             all.x = TRUE)
 
       } else {
         return(temp_out)
@@ -252,6 +292,20 @@ summary_table <- function(data,
                            by = "varname",
                            all.x = TRUE)
 
+    } else if (get_no_events){
+
+      temp_out_no_events <-
+        lapply(vars[vapply(df[, vars, with = FALSE], is.factor, logical(1))],
+               function(x){
+                 summary_no_events(df      = df,
+                                   var     = x,
+                                   event   = event)
+               }) |> data.table::rbindlist()
+
+      out_overall <- merge(out_overall, temp_out_no_events,
+                           by = "varname",
+                           all.x = TRUE)
+
     }
 
   }
@@ -277,7 +331,7 @@ summary_table <- function(data,
 
   if(inherits(out, "list")){
 
-    # Cobine data.tables
+    # Combine data.tables
     out <- data.table::rbindlist(out)
 
   }
@@ -389,7 +443,7 @@ summary_rates <- function(df, var, event, st, control){
 
   no_events <- t_at_risk <- p_events <- NULL # Due to NSE notes in R CMD check
 
-  # Get no. births by variable
+  # Get no. of events and person-years
   rate_dt <- data.table::copy(df)
 
   rate_dt <- rate_dt[!is.na(get(var)),
@@ -409,5 +463,22 @@ summary_rates <- function(df, var, event, st, control){
   names(rate) <- paste0("rate_", names(rate))
 
   return(cbind(varname = paste(var, rate_dt[[var]]), rate_dt[, -1], rate))
+
+}
+
+# summary_count function ------------------------------------------------------
+
+summary_no_events <- function(df, var, event){
+
+  no_events <- NULL # Due to NSE notes in R CMD check
+
+  # Get no. of events and person-years
+  count_dt <- data.table::copy(df)
+
+  count_dt <- count_dt[!is.na(get(var)),
+                       list(no_events = sum(get(event))),
+                       by = var]
+
+  return(cbind(varname = paste(var, count_dt[[var]]), count_dt[, -1]))
 
 }

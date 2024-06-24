@@ -10,6 +10,7 @@ summary_table(
   strata = NULL,
   overall = FALSE,
   get_rates = FALSE,
+  get_no_events = FALSE,
   event = NULL,
   st = NULL,
   control = list(ctype = "inc.rate", method = "exact")
@@ -31,6 +32,11 @@ complete dataset. This can be used in combination with \code{strata}.}
 \item{get_rates}{If \code{TRUE} the summary tables includes events rates for events specified
 in the \code{event} argument for each level of variables in \code{var}. Rates can
 only be estimated for factor variables in \code{var}.}
+
+\item{get_no_events}{If \code{TRUE} the summary tables includes the number of events specified
+in the \code{event} argument for each level of variables in \code{var}. This
+argument is obsolete if \code{get_rates == TRUE} as the number of events is
+automatically added to the table in this case.}
 
 \item{event}{Name of the event indicator that should be used to compute rates.
 Needs to be specified if \code{get_rates == TRUE}.}
