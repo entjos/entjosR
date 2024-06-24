@@ -218,7 +218,7 @@ summary_table <- function(data,
 
       temp_out  <- lapply(vars,
                           function(x){
-                            var_summary(df  = strata_df,
+                            summarise_var(df  = strata_df,
                                         var = x)
                           }) |> data.table::rbindlist()
 
@@ -227,7 +227,7 @@ summary_table <- function(data,
         temp_out_rates <-
           lapply(vars[vapply(df[, vars, with = FALSE], is.factor, logical(1))],
                  function(x){
-                   summary_rates(df      = strata_df,
+                   summarise_rates(df      = strata_df,
                                  var     = x,
                                  event   = event,
                                  st      = st,
@@ -243,7 +243,7 @@ summary_table <- function(data,
         temp_out_no_events <-
           lapply(vars[vapply(df[, vars, with = FALSE], is.factor, logical(1))],
                  function(x){
-                   summary_no_events(df      = strata_df,
+                   summarise_no_events(df      = strata_df,
                                      var     = x,
                                      event   = event)
                  }) |> data.table::rbindlist()
@@ -273,7 +273,7 @@ summary_table <- function(data,
 
   if(is.null(strata) | overall){
 
-    out_overall <- lapply(vars, var_summary, df = df) |>
+    out_overall <- lapply(vars, summarise_var, df = df) |>
       data.table::rbindlist()
 
     if(get_rates){
@@ -281,7 +281,7 @@ summary_table <- function(data,
       temp_out_rates <-
         lapply(vars[vapply(df[, vars, with = FALSE], is.factor, logical(1))],
                function(x){
-                 summary_rates(df      = df,
+                 summarise_rates(df      = df,
                                var     = x,
                                event   = event,
                                st      = st,
@@ -297,7 +297,7 @@ summary_table <- function(data,
       temp_out_no_events <-
         lapply(vars[vapply(df[, vars, with = FALSE], is.factor, logical(1))],
                function(x){
-                 summary_no_events(df      = df,
+                 summarise_no_events(df      = df,
                                    var     = x,
                                    event   = event)
                }) |> data.table::rbindlist()
@@ -337,148 +337,5 @@ summary_table <- function(data,
   }
 
   return(as.data.frame(out))
-
-}
-
-# var_summary function --------------------------------------------------------
-
-var_summary <- function(df, var){
-
-  # Calculate numbers and proportion in each category for factor variables
-  if(is.factor(df[[var]])){
-
-    lev <- levels(df[[var]])
-
-    out <- lapply(seq_along(lev), function(i){
-
-      mean <- mean(as.numeric(df[[var]] == lev[i]),
-                   na.rm = TRUE) |>
-        round(3)
-
-      p25  <-  NA
-
-      p75  <-  NA
-
-      min  <- 0
-
-      max  <- 1
-
-      n_category <- sum(df[[var]] == lev[i], na.rm = TRUE)
-
-      n_total    <- sum(!is.na(df[[var]]))
-
-      n_NA       <- sum(is.na(df[[var]]))
-
-      varname <- paste(var, levels(df[[var]])[i]) |>
-        as.character()
-
-      return(data.frame(varname, mean, p25, p75, min, max,
-                        n_category, n_total, n_NA))
-
-    }) |> data.table::rbindlist()
-
-    # Calculate numbers and proportion in each category for dichotomiesed
-    # integer variables
-  } else if(is.numeric(df[[var]]) &
-            max(df[[var]], na.rm = TRUE) == 1 &
-            min(df[[var]], na.rm = TRUE) == 0){
-
-    mean <- mean(df[[var]],
-                 na.rm = TRUE) |>
-      round(3)
-
-    p25  <- NA
-
-    p75  <- NA
-
-    min  <- 0
-
-    max  <- 1
-
-    n_category <- sum(df[[var]], na.rm = TRUE)
-
-    n_total    <- sum(!is.na(df[[var]]))
-
-    n_NA       <- sum(is.na(df[[var]]))
-
-    out <- data.frame(varname = paste(var), mean, p25, p75, min, max,
-                      n_category, n_total, n_NA)
-
-    # Calculate median, q25, q75 for numeric variables
-  } else if(is.numeric(df[[var]]) &
-            max(df[[var]], na.rm = TRUE) != 1){
-
-    mean <- stats::quantile(df[[var]], 0.5 , na.rm = TRUE,
-                            names = FALSE) |>
-      round(1)
-
-    p25  <- stats::quantile(df[[var]], 0.25, na.rm = TRUE,
-                            names = FALSE) |>
-      round(1)
-
-    p75  <- stats::quantile(df[[var]], 0.75, na.rm = TRUE,
-                            names = FALSE) |>
-      round(1)
-
-    min <- min(df[[var]], na.rm = TRUE)
-
-    max <- max(df[[var]], na.rm = TRUE)
-
-    n_category <- NA
-
-    n_total    <- sum(!is.na(df[[var]]))
-
-    n_NA       <- sum(is.na(df[[var]]))
-
-    out <- data.frame(varname = var, mean, p25, p75, min, max,
-                      n_category, n_total, n_NA)
-
-  }
-  return(out)
-}
-
-# summary_rates function ------------------------------------------------------
-
-summary_rates <- function(df, var, event, st, control){
-
-  no_events <- t_at_risk <- p_events <- NULL # Due to NSE notes in R CMD check
-
-  # Get no. of events and person-years
-  rate_dt <- data.table::copy(df)
-
-  rate_dt <- rate_dt[!is.na(get(var)),
-                     list(no_events = sum(get(event)),
-                          t_at_risk = sum(get(st))),
-                     by = var]
-
-  rate_dt[, p_events := no_events / sum(no_events)]
-
-  # Calculate rates with CIs
-  args_epi.conf     <- control
-  args_epi.conf$dat <- as.matrix(rate_dt[, c("no_events", "t_at_risk")])
-
-  rate <- do.call(epiR::epi.conf, args_epi.conf)
-
-  # Improve naming
-  names(rate) <- paste0("rate_", names(rate))
-
-  return(cbind(varname = paste(var, rate_dt[[var]]), rate_dt[, -1], rate))
-
-}
-
-# summary_count function ------------------------------------------------------
-
-summary_no_events <- function(df, var, event){
-
-  no_events <- NULL # Due to NSE notes in R CMD check
-
-  # Get no. of events and person-years
-  count_dt <- data.table::copy(df)
-
-  count_dt <- count_dt[!is.na(get(var)),
-                       list(no_events = sum(get(event))),
-                       by = var]
-
-  return(cbind(varname = paste(var, count_dt[[var]]), count_dt[, -1]))
 
 }
