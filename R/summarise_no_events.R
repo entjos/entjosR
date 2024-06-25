@@ -18,7 +18,7 @@ summarise_no_events <- function(df, var, event){
   count_dt <- data.table::copy(df)
 
   count_dt <- count_dt[!is.na(get(var)),
-                       list(no_events = sum(as.numeric(get(event)))),
+                       list(no_events = sum(as.numeric(as.character(get(event))))),
                        by = var]
 
   return(cbind(varname = paste(var, count_dt[[var]]), count_dt[, -1]))
