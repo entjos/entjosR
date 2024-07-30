@@ -37,6 +37,7 @@
 #'    for each strata will be returned.
 #'
 #' @import rstpm2
+#' @import survival
 #' @export fpm_test_dfs
 #'
 #' @examples
