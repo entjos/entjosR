@@ -10,7 +10,8 @@ fpm_test_dfs(
   dfs_tvc = NULL,
   by_vars = NULL,
   same_dfs_tvc = FALSE,
-  data
+  data,
+  control = list()
 )
 }
 \arguments{
@@ -31,6 +32,9 @@ largest specified DF in \code{dfs_tvc} will be tested for all variables
 specified in \code{dfs_tvc} at the same time.}
 
 \item{data}{A data set that should be used to fit the FPM.}
+
+\item{control}{An optional list of additional parameters passed to
+\code{rstpm2::stpm2()}.}
 }
 \value{
 A \code{data.frame} with one row per combination of baseline hazards

@@ -27,6 +27,9 @@
 #' @param data
 #'    A data set that should be used to fit the FPM.
 #'
+#' @param control An optional list of additional parameters passed to
+#'    `rstpm2::stpm2()`.
+#'
 #' @return
 #'    A `data.frame` with one row per combination of baseline hazards
 #'    and tvc dfs and the corresponding AIC and BIC. If the `by_vars`
@@ -67,7 +70,8 @@ fpm_test_dfs <- function(formula,
                          dfs_tvc = NULL,
                          by_vars = NULL,
                          same_dfs_tvc = FALSE,
-                         data){
+                         data,
+                         control = list()){
 
   # Check that tvc variables are icluded in dataset
   if(!all(names(dfs_tvc) %in% colnames(data))){
@@ -85,7 +89,7 @@ fpm_test_dfs <- function(formula,
   # Test DFs for non-stratified models
   if(is.null(by_vars)){
 
-    test_dfs(formula, dfs_bh, dfs_tvc, same_dfs_tvc, data)
+    test_dfs(formula, dfs_bh, dfs_tvc, same_dfs_tvc, data, control)
 
     # Test DFs for stratified models
   } else {
@@ -104,7 +108,7 @@ fpm_test_dfs <- function(formula,
 
     by(data,
        data$filter_vars,
-       function(x) test_dfs(formula, dfs_bh, dfs_tvc, same_dfs_tvc, x))
+       function(x) test_dfs(formula, dfs_bh, dfs_tvc, same_dfs_tvc, x, control))
   }
 
 }
@@ -113,7 +117,8 @@ test_dfs <- function(formula,
                      dfs_bh,
                      dfs_tvc,
                      same_dfs_tvc,
-                     data){
+                     data,
+                     control){
 
   if(is.null(dfs_tvc)){
 
@@ -122,7 +127,8 @@ test_dfs <- function(formula,
                   function(i){test_df(df_bh   = i,
                                       df_tvc  = NULL,
                                       formula = formula,
-                                      data    = data)})
+                                      data    = data,
+                                      control)})
 
     out <- do.call(rbind, out)
 
@@ -153,7 +159,8 @@ test_dfs <- function(formula,
                   function(i){test_df(df_bh   = tmp$dfs_bh[[i]],
                                       df_tvc  = as.list(tmp[i, ])[-1],
                                       formula = formula,
-                                      data    = data)})
+                                      data    = data,
+                                      control)})
 
     out <- do.call(rbind, out)
   }
@@ -179,12 +186,14 @@ test_dfs <- function(formula,
 test_df <- function(formula,
                     df_bh,
                     df_tvc = NULL,
-                    data){
+                    data,
+                    control){
 
   argument_list <- list(formula = formula,
                         data    = data,
                         df      = df_bh,
-                        tvc     = NULL)
+                        tvc     = NULL) |>
+    append(control)
 
   # Add tvc argument if tvc > 0
   if(!is.null(df_tvc)){
