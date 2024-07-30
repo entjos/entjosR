@@ -1,33 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://entjos.github.io/entjosR/404.html</loc>
-  </url>
-  <url>
-    <loc>https://entjos.github.io/entjosR/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>https://entjos.github.io/entjosR/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://entjos.github.io/entjosR/index.html</loc>
-  </url>
-  <url>
-    <loc>https://entjos.github.io/entjosR/reference/cc_match.html</loc>
-  </url>
-  <url>
-    <loc>https://entjos.github.io/entjosR/reference/fpm_get_best_fit.html</loc>
-  </url>
-  <url>
-    <loc>https://entjos.github.io/entjosR/reference/fpm_test_dfs.html</loc>
-  </url>
-  <url>
-    <loc>https://entjos.github.io/entjosR/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://entjos.github.io/entjosR/reference/summary_table.html</loc>
-  </url>
-  <url>
-    <loc>https://entjos.github.io/entjosR/reference/write_to_workbook.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://entjos.github.io/entjosR/404.html</loc></url>
+<url><loc>https://entjos.github.io/entjosR/LICENSE.html</loc></url>
+<url><loc>https://entjos.github.io/entjosR/authors.html</loc></url>
+<url><loc>https://entjos.github.io/entjosR/index.html</loc></url>
+<url><loc>https://entjos.github.io/entjosR/reference/cc_match.html</loc></url>
+<url><loc>https://entjos.github.io/entjosR/reference/fpm_get_best_fit.html</loc></url>
+<url><loc>https://entjos.github.io/entjosR/reference/fpm_test_dfs.html</loc></url>
+<url><loc>https://entjos.github.io/entjosR/reference/index.html</loc></url>
+<url><loc>https://entjos.github.io/entjosR/reference/summary_table.html</loc></url>
+<url><loc>https://entjos.github.io/entjosR/reference/write_to_workbook.html</loc></url>
 </urlset>
+
