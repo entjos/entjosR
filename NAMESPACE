@@ -3,6 +3,7 @@
 export(cc_match)
 export(fpm_get_best_fit)
 export(fpm_test_dfs)
+export(p_adjust_graph)
 export(summary_table)
 export(write_to_workbook)
 import(data.table)
