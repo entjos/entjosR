@@ -46,7 +46,9 @@
 
 p_adjust_graph <- function(p, alpha, G){
 
-  # Initiation
+  # Test input -----------------------------------------------------------------
+
+  # Initiation -----------------------------------------------------------------
   out <- data.frame()
   failure <- FALSE
   # Order P-values in testing order
@@ -63,7 +65,7 @@ p_adjust_graph <- function(p, alpha, G){
   # Initiate p-max
   p_max <- 0
 
-  # Iterate over graphs until no P-value is untested
+  # Iterate over graphs until no P-value is untested ---------------------------
   while(length(I) >= 1 & !failure) {
 
     # Take the first/next P-value and remove it from the set
@@ -72,7 +74,7 @@ p_adjust_graph <- function(p, alpha, G){
 
     p_adj <- p_max <- max(p[j] / w[j], p_max)
 
-    # Test H_j
+    # Test H_j =================================================================
     if(p[j] <= alpha[j]){
 
       # Output sucess
@@ -87,7 +89,7 @@ p_adjust_graph <- function(p, alpha, G){
                                    passed = TRUE,
                                    p_adj  = p_adj))
 
-      # Update Graph
+      # Update Graph ===========================================================
       alpha[I]  <- alpha[I] + (alpha[j] * G[j,I])
       alpha[-I] <- 0
 
@@ -106,10 +108,7 @@ p_adjust_graph <- function(p, alpha, G){
 
     } else {
 
-      # Stop iteration
-      failure <- TRUE
-
-      # Output failure
+      # Output failure =========================================================
       cat("\nH", j,
           " failed at " , format(round(alpha[j], digits = 3), nsmall = 3),
           " (p-adjust: ", format(round(p_adj   , digits = 3), nsmall = 3), ")",
@@ -120,6 +119,9 @@ p_adjust_graph <- function(p, alpha, G){
                                    p      = p[j],
                                    passed = FALSE,
                                    p_adj  = p_adj))
+
+      # Stop iteration
+      failure <- TRUE
 
       # Add other untested hypothesis to output
       if(length(I) >= 1){
